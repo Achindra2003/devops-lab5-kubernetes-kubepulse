@@ -100,18 +100,30 @@ Manual `kubectl scale` to 5 works but is **overridden** by the HPA back to the m
 
 ## 6. Initiative 5 — Multi-node placement and disruption safety
 
-`topologySpreadConstraints` (`maxSkew: 1` on `kubernetes.io/hostname`, `ScheduleAnyway`) spreads replicas over both worker nodes; `validate:deploy` asserts Pods occupy more than one node. Combined with the PDB, a node drain cannot take down more than one replica at a time. I chose `ScheduleAnyway` over `DoNotSchedule` so a node outage degrades spreading rather than blocking scheduling.
+### The Problem
+By default the scheduler may place every replica on one node, and a node drain or upgrade can evict all of them at once — "3 replicas" then gives no availability.
+
+### What was implemented
+`topologySpreadConstraints` (`maxSkew: 1` on `kubernetes.io/hostname`, `ScheduleAnyway`) spreads replicas over both worker nodes, and a PodDisruptionBudget (`maxUnavailable: 1`) limits voluntary evictions. `ScheduleAnyway` was chosen over `DoNotSchedule` so a node outage degrades spreading rather than blocking scheduling.
+
+### Engineering Impact
+`validate:deploy` asserts the Pods occupy more than one node (observed: `kubepulse-worker` and `kubepulse-worker2`); `validate:resilience` confirms the PDB allows exactly 1 disruption.
 
 ---
 
 ## 7. Initiative 6 — Container and Pod hardening
 
+### The Problem
+Default Pods run with a writable root filesystem, default Linux capabilities and no syscall filter, so a compromised process can modify the image's files and escalate.
+
+### What was implemented
 ```yaml
 securityContext (Pod):  runAsNonRoot: true, runAsUser: 1000, seccompProfile: RuntimeDefault
 securityContext (container): allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: drop [ALL]
 volumes: emptyDir {medium: Memory, sizeLimit: 16Mi} mounted at /tmp
 ```
-Lessons learned:
+### Engineering Impact
+`validate:deploy` verifies UID 1000, a read-only root filesystem and no privilege escalation on the live Pod. Lessons learned:
 - `runAsNonRoot` can only be verified against a **numeric** UID. The Dockerfile uses `USER 1000`, not `USER node`; with a name, the kubelet refuses to start the container ("cannot verify user is non-root").
 - A read-only root filesystem requires an explicit writable mount for anything that writes (`/tmp`).
 - The Dockerfile `HEALTHCHECK` is **ignored by Kubernetes**; it only serves `docker run`. Kubernetes uses its own probes.
@@ -121,7 +133,13 @@ Lessons learned:
 
 ## 8. Initiative 7 — Externalised configuration and Downward API
 
-`ConfigMap` (greeting, startup delay, chaos switch) and `Secret` (token) are injected with `envFrom`. The **Downward API** exposes Pod name, namespace, IP and node name to the process so the dashboard can show where each response came from. Configuration changes need no image rebuild.
+### The Problem
+Configuration baked into the image forces a rebuild for every change, and a Pod has no way to know its own name or node — making it impossible to see which replica served a request.
+
+### What was implemented
+`ConfigMap` (greeting, startup delay, chaos switch) and `Secret` (token) are injected with `envFrom`. The **Downward API** exposes Pod name, namespace, IP and node name to the process so the dashboard can show where each response came from. 
+### Engineering Impact
+Configuration changes need no image rebuild, and every response identifies its Pod and node, which is what makes load balancing and rollouts visible. `validate:deploy` confirms the greeting arrives from the ConfigMap and the secret is present but never echoed.
 
 ---
 

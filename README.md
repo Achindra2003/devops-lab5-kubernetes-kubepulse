@@ -1,4 +1,9 @@
 # KubePulse — Kubernetes Deployments, Services, Scaling & Rolling Updates
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.32%20kind%203--node-326ce5?style=flat&logo=kubernetes&logoColor=white)](https://github.com/Achindra2003/devops-lab5-kubernetes-kubepulse)
+[![Rolling Update](https://img.shields.io/badge/Rolling%20Update-0%20failed%20requests-10b981?style=flat)](https://github.com/Achindra2003/devops-lab5-kubernetes-kubepulse)
+[![Autoscaling](https://img.shields.io/badge/HPA-3%E2%86%928%20replicas-blue?style=flat)](https://github.com/Achindra2003/devops-lab5-kubernetes-kubepulse)
+[![Validation](https://img.shields.io/badge/Validation-24%2F24%20checks-10b981?style=flat)](https://github.com/Achindra2003/devops-lab5-kubernetes-kubepulse)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 > **DevOps Lab 5:** Deploy containerized applications on a Kubernetes cluster, configure Deployments, Services, scaling and rolling updates.  
 > **Course:** MCA Trimester 5 — DevOps Lab  

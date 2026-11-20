@@ -1,0 +1,654 @@
+ ▐▛███▛█   Claude Code v2.1.329
+▝▜██████▀  Sonnet 5.5 · Claude Pro
+ ▝▝   ▝▝   D:\Downloads\Trimester 5 - DevOps\Lab 5
+
+
+❯ /model                                                                        
+  ⎿  Set model to Sonnet 5.5 and saved as your default for new sessions
+
+❯ this is lab 5 : Deploy containerized applications on a Kubernetes cluster,    
+  configure Deployments, Services, scaling and rolling updates.                 
+                                                                                
+  check the other lab folders for how labs are supposed to be done; basically   
+  there must be complexities to it and some self learning components, check     
+  like Lab 4 folder for how it's done and especially the docs subfolder that    
+  has the report for that lab, use it as a reference                            
+
+  Searched for 3 patterns, read 2 files, ran 5 shell commands (ctrl+o to expand)
+
+● Reading Lab 4's app code, scripts and screenshot generator to copy its
+  structure. Docker Desktop is off and there is no cluster, so I can't run
+  anything live yet.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(server.js)
+  ⎿  Wrote 146 lines to server.js
+       1 /**
+       2  * KubePulse — Kubernetes-aware microservice (zero dependencies)
+       3  * MCA Trimester 5 - DevOps Lab 5
+       4  * Author: Achindra Sharma (2547105) — 4MCA A
+       5  *
+       6  * The app reports which Pod served each request, so Kubernetes
+         behaviour
+       7  * (load balancing, rolling updates, autoscaling, self-healing)
+         is visible.
+       8  */
+     … +138 lines (ctrl+o to expand)
+
+● Write(package.json)
+  ⎿  Wrote 28 lines to package.json
+       1 {
+       2   "name": "devops-lab5-kubernetes-kubepulse",
+       3   "version": "1.0.0",
+       4   "description": "KubePulse — Kubernetes Deployments, Services, 
+         Scaling (HPA) and Rolling Updates with zero-downtime validation"
+         ,
+       5   "main": "server.js",
+       6   "type": "module",
+       7   "scripts": {
+       8     "start": "node server.js",
+     … +20 lines (ctrl+o to expand)
+
+● Write(Dockerfile)
+  ⎿  Wrote 36 lines to Dockerfile
+      1 # ===============================================================
+        ==========
+      2 # KubePulse image — one Dockerfile, three releases via build args
+        :
+      3 #   v1: docker build --build-arg APP_VERSION=1.0.0 -t kubepulse:1
+        .0.0 .
+      4 #   v2: docker build --build-arg APP_VERSION=2.0.0 -t kubepulse:2
+        .0.0 .
+      5 #   v3: docker build --build-arg APP_VERSION=3.0.0 --build-arg BR
+        OKEN=true \
+     … +31 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(public\index.html)
+  ⎿  Wrote 48 lines to public\index.html
+       1 <!doctype html>
+       2 <html lang="en">
+       3 <head>
+       4   <meta charset="utf-8">
+       5   <meta name="viewport" content="width=device-width, initial-sca
+         le=1">
+       6   <title>KubePulse — Kubernetes Live Dashboard</title>
+       7   <link rel="stylesheet" href="style.css">
+       8 </head>
+       9 <body>
+     … +39 lines (ctrl+o to expand)
+
+● Write(public\style.css)
+  ⎿  Wrote 35 lines to public\style.css
+       1 :root {
+       2   --bg: #0d1117; --panel: #161b22; --border: #30363d;
+       3   --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --ok: #3
+         fb950; --bad: #f85149;
+       4 }
+       5 * { box-sizing: border-box; }
+       6 body { margin: 0; padding: 24px 16px 48px; background: var(--bg)
+         ; color: var(--text);
+       7   font: 15px/1.5 "Segoe UI", system-ui, sans-serif; max-width: 1
+         000px; margin-inline: auto; }
+     … +28 lines (ctrl+o to expand)
+
+● Write(public\app.js)
+  ⎿  Wrote 107 lines to public\app.js
+       1 // KubePulse dashboard: every request goes through the Kubernete
+         s Service,
+       2 // so the table below shows real load balancing across Pods and 
+         live version changes.
+       3 const $ = (id) => document.getElementById(id);
+       4 let pods = {};
+       5 let total = 0;
+       6 let failed = 0;
+       7 let loadWorkers = 0;
+       8 const LOAD_CONCURRENCY = 6;
+     … +99 lines (ctrl+o to expand)
+
+● Write(tests\app.test.js)
+  ⎿  Wrote 61 lines to tests\app.test.js
+       1 import test from 'node:test';
+       2 import assert from 'node:assert/strict';
+       3 
+       4 // Env must be set before server.js is imported (it reads config
+          at load time).
+       5 process.env.APP_VERSION = '9.9.9';
+       6 process.env.POD_NAME = 'test-pod';
+       7 process.env.CHAOS_ENABLED = 'true';
+       8 process.env.API_TOKEN = 'super-secret';
+       9 
+     … +52 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Directory arg unsupported in Node 22; point at the file.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Write(scripts\lib.js)
+  ⎿  Wrote 84 lines to scripts\lib.js
+       1 // Shared helpers for the validation suites.
+       2 import { execFileSync } from 'node:child_process';
+       3 
+       4 export const NS = 'kubepulse';
+       5 export const URL_BASE = process.env.KUBEPULSE_URL || 'http://loc
+         alhost:8080';
+       6 
+       7 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms
+         ));
+       8 
+     … +76 lines (ctrl+o to expand)
+
+  Ran 2 shell commands · 1 failed (ctrl+o to expand)
+
+● Nothing written; use Write per file.
+
+● Write(scripts\install-metrics-server.js)
+  ⎿  Wrote 15 lines to scripts\install-metrics-server.js
+       1 // metrics-server feeds CPU/memory numbers to the HPA. kind's ku
+         belets use self-signed
+       2 // certs, so --kubelet-insecure-tls is required (lab clusters on
+         ly — never in production).
+       3 import { execFileSync } from 'node:child_process';
+       4 
+       5 const VERSION = 'v0.7.2';
+       6 const kubectl = (...a) => execFileSync('kubectl', a, { encoding:
+          'utf8' }).trim();
+       7 const run = (...a) => console.log(kubectl(...a));
+     … +8 lines (ctrl+o to expand)
+
+● Write(scripts\validate-deployment.js)
+  ⎿  Wrote 74 lines to scripts\validate-deployment.js
+       1 /** Validates Deployment, Service, probes, security context and 
+         load balancing. */
+       2 import { createSuite, kjson, kns, get, waitFor, NS } from './lib
+         .js';
+       3 
+       4 const s = createSuite('KUBEPULSE DEPLOYMENT & SERVICE VALIDATION
+          SUITE');
+       5 const dep = () => kjson('-n', NS, 'get', 'deploy', 'kubepulse');
+       6 const pods = () => kjson('-n', NS, 'get', 'pods', '-l', 'app=kub
+         epulse').items;
+     … +68 lines (ctrl+o to expand)
+
+● Write(scripts\validate-resilience.js)
+  ⎿  Wrote 51 lines to scripts\validate-resilience.js
+       1 /** Self-healing: pod deletion, readiness removal from endpoints
+         , crash restart. */
+       2 import { createSuite, kjson, kns, waitFor, NS } from './lib.js';
+       3 
+       4 const s = createSuite('KUBEPULSE SELF-HEALING & PROBE VALIDATION
+          SUITE');
+       5 const pods = () => kjson('-n', NS, 'get', 'pods', '-l', 'app=kub
+         epulse').items;
+       6 const isReady = (p) => p.status.conditions?.some((c) => c.type =
+         == 'Ready' && c.status === 'True');
+     … +45 lines (ctrl+o to expand)
+
+● Write(scripts\validate-rollout.js)
+  ⎿  Wrote 62 lines to scripts\validate-rollout.js
+       1 /**
+       2  * Rolling update + failed-release protection + rollback, all un
+         der live traffic.
+       3  * Expects the Deployment to start on kubepulse:1.0.0. Leaves it
+          on 2.0.0.
+       4  */
+       5 import { createSuite, kns, kjson, get, startTraffic, waitFor, sl
+         eep, NS } from './lib.js';
+       6 
+       7 const s = createSuite('KUBEPULSE ROLLING UPDATE, FAILURE PROTECT
+     … +56 lines (~3 KB) (ctrl+o to expand)
+
+● Write(scripts\validate-scaling.js)
+  ⎿  Wrote 49 lines to scripts\validate-scaling.js
+       1 /** Manual scaling, then HPA-driven scale-out under CPU load and
+          scale-in afterwards. */
+       2 import { createSuite, kns, kjson, waitFor, startTraffic, NS } fr
+         om './lib.js';
+       3 
+       4 const s = createSuite('KUBEPULSE SCALING VALIDATION SUITE (MANUA
+         L + HPA)');
+       5 const dep = () => kjson('-n', NS, 'get', 'deploy', 'kubepulse');
+       6 const hpa = () => kjson('-n', NS, 'get', 'hpa', 'kubepulse');
+       7 const min = hpa().spec.minReplicas;
+     … +42 lines (ctrl+o to expand)
+● Code written. Now run it for real: start Docker Desktop and get kind.
+
+  Ran 5 shell commands (ctrl+o to expand)
+
+● Lab 4's gateway holds :8080. I'll leave it running and map Lab 5 to :8088.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Cluster up. Load images, install metrics-server, deploy.
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Sequential keep-alive requests all hit one pod because kube-proxy balances per
+  TCP connection, not per request. I'm making the API send Connection: close so
+  each request gets balanced, and documenting why. · summary
+
+● Update(server.js)
+  ⎿  Added 3 lines
+      47    res.writeHead(status, {
+      48      'Content-Type': 'application/json; charset=utf-8',
+      49      'Cache-Control': 'no-store',
+      50 +    // kube-proxy balances per TCP *connection*; a keep-alive c
+         +lient would stick to one Pod.                                  
+      51 +    // Closing after each API response makes every request re-b
+         +alance (and re-resolve during rollouts).                       
+      52 +    Connection: 'close',                                       
+      53      'X-Served-By': process.env.POD_NAME || os.hostname(),
+      54    });
+      55    res.end(JSON.stringify(body));
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Earlier fail was a race with a terminating pod. Make the suites ignore
+  terminating pods.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(scripts\validate-deployment.js)
+  ⎿  Added 7 lines, removed 6 lines
+      43    return `UID ${uid}, readOnlyRootFilesystem=true, capabilities
+           dropped`;
+      44  });
+      45 
+      46 -await s.check('Service endpoints match Ready pods', () => {    
+      47 -  const ready = pods().filter(isReady).length;                 
+      48 -  const ep = kjson('-n', NS, 'get', 'endpoints', 'kubepulse'); 
+      49 -  const n = ep.subsets?.[0]?.addresses?.length ?? 0;           
+      50 -  if (n !== ready) throw new Error(`endpoints=${n}, ready pods=
+         -${ready}`);                                                    
+      51 -  return `${n} endpoint addresses == ${ready} Ready pods`;     
+      46 +await s.check('Service endpoints match Ready pods', async () =>
+         + {                                                             
+      47 +  const counts = () => ({                                      
+      48 +    ready: pods().filter(isReady).length,                      
+      49 +    n: kjson('-n', NS, 'get', 'endpoints', 'kubepulse').subsets
+         +?.[0]?.addresses?.length ?? 0,                                 
+      50 +  });                                                          
+      51 +  const c = await waitFor('endpoints == ready pods', () => { co
+         +nst x = counts(); return x.n === x.ready && x; }, { timeoutMs: 
+         +20000, everyMs: 1000 });                                       
+      52 +  return `${c.n} endpoint addresses == ${c.ready} Ready pods`; 
+      53  });
+      54 
+      55  await s.check('Service DNS resolves inside the cluster (kubepul
+          se.kubepulse.svc)', () => {
+
+● Now the main event: rollout suite, then scaling.
+
+  Ran 1 shell command · 1 failed (ctrl+o to expand)
+
+● The rewrite I'd produce for that narration is: "The test failure is on my
+  side, not the cluster: execFileSync inside rollout status blocks the event
+  loop and stalls the traffic generator. I'll make the long kubectl calls async
+  and annotate before set image so the change-cause lands on the right
+  revision." · summary
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Revision labels are muddled by a controller race. Use one atomic patch for
+  image + change-cause, and annotate after undo.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Rollout suite green. Now scaling (HPA), run in background.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● All four suites pass on the live 3-node cluster, and I'm now replacing the
+  lab's invented screenshot output with a script that captures the real
+  commands. · summary
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(scripts\probe.js)
+  ⎿  Wrote 8 lines to scripts\probe.js
+      1 // Prints which Pod answered each request through the Service. Us
+        age: node scripts/probe.js [count]
+      2 import { get } from './lib.js';
+      3 
+      4 const n = parseInt(process.argv[2] || '10', 10);
+      5 for (let i = 1; i <= n; i++) {
+      6   const d = await get();
+      7   console.log(`request ${String(i).padStart(2)} -> pod=${d.pod}  
+        node=${d.node}  version=${d.version}`);
+      8 }
+
+● Write(scripts\capture-evidence.py)
+  ⎿  Wrote 131 lines to scripts\capture-evidence.py
+       1 """
+       2 Captures REAL evidence for the Lab 5 report.
+       3 
+       4 Runs each command against the live cluster, stores the raw outpu
+         t in
+       5 docs/evidence/*.txt and renders it as a terminal-style PNG in do
+         cs/screenshots/.
+       6 Nothing here is hand-written output: if a command fails, the fai
+         lure is what gets rendered.
+       7 
+     … +124 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(.github\workflows\k8s-ci.yml)
+  ⎿  Wrote 76 lines to .github\workflows\k8s-ci.yml
+       1 name: KubePulse Kubernetes CI
+       2 
+       3 on:
+       4   push:
+       5     branches: [main, develop]
+       6   pull_request:
+       7     branches: [main]
+       8 
+       9 jobs:
+      10   # Job 1: unit tests for the app contract (probes, chaos switch
+     … +67 lines (~2 KB) (ctrl+o to expand)
+
+● While capture runs, add a naive-Deployment baseline (Lab 4 had an
+  "unoptimized" comparison; this gives a measured one).
+
+● Write(k8s\unoptimized\naive-deployment.yaml)
+  ⎿  Wrote 34 lines to k8s\unoptimized\naive-deployment.yaml
+       1 # BASELINE ANTI-PATTERN — what a first attempt at a Deployment u
+         sually looks like.
+       2 # Used only by scripts/compare-naive.js to measure downtime agai
+         nst k8s/base.
+       3 #
+       4 #  - strategy Recreate        : kills every Pod, then starts new
+          ones -> guaranteed outage
+       5 #  - no readiness probe       : Service routes traffic the momen
+         t the container starts
+       6 #  - no liveness/startup probe: a hung process is never restarte
+     … +29 lines (ctrl+o to expand)
+
+● Write(scripts\compare-naive.js)
+  ⎿  Wrote 40 lines to scripts\compare-naive.js
+       1 /**
+       2  * Measured baseline: the same v1 -> v2 update done with a naive
+          Deployment (Recreate, no probes)
+       3  * versus the production manifest (RollingUpdate, maxUnavailable
+         =0, readiness, preStop).
+       4  * Leaves the cluster on the production manifest.
+       5  */
+       6 import { createSuite, kns, knsAsync, kubectl, get, startTraffic,
+          waitFor, sleep } from './lib.js';
+       7 
+     … +33 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(README.md)
+  ⎿  Wrote 135 lines to README.md
+       1 # KubePulse — Kubernetes Deployments, Services, Scaling & Rollin
+         g Updates
+       2 
+       3 > **DevOps Lab 5:** Deploy containerized applications on a Kuber
+         netes cluster, configure Deployments, Services, scaling and roll
+         ing updates.
+       4 > **Course:** MCA Trimester 5 — DevOps Lab
+       5 > **Student:** Achindra Sharma (2547105) — 4MCA A
+       6 > **Live dashboard:** [http://localhost:8088](http://localhost:8
+         088) (after deployment)
+     … +129 lines (ctrl+o to expand)
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+● Write(docs\SELF_LEARNING.md)
+  ⎿  Wrote 166 lines to docs\SELF_LEARNING.md
+       1 # Self-Learning Report: Production-Grade Kubernetes Deployment E
+         ngineering
+       2 
+       3 **Course:** MCA Trimester 5 — DevOps Lab (Lab 5)
+       4 **Student Name:** Achindra Sharma (2547105) — 4MCA A
+       5 **Application:** KubePulse — Kubernetes-aware microservice with
+         live dashboard
+       6 **Context:** Deploying containerized applications on Kubernetes:
+          Deployments, Services, scaling, rolling updates
+       7 
+     … +159 lines (ctrl+o to expand)
+
+● Evidence capture still running against the cluster; docs are being written
+  meanwhile. Checking progress.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(docs\screenshots\README.md)
+  ⎿  Wrote 26 lines to docs\screenshots\README.md
+       1 # Evidence Guide — Real Captures
+       2 
+       3 **Course:** MCA Trimester 5 — DevOps Lab (Lab 5)
+       4 **Student:** Achindra Sharma (2547105) — 4MCA A
+       5 
+       6 Every figure is generated from **real command output** against t
+         he live cluster by `scripts/capture-evidence.py`. The raw text f
+         or each figure is saved next to it in [`../evidence/`](../eviden
+         ce) so any figure can be checked against its source. Nothing is
+         typed or edited by hand. To regenerate: `python scripts/capture-
+     … +21 lines (~2 KB) (ctrl+o to expand)
+
+● Write(docs\EVALUATION_CHEAT_SHEET.md)
+  ⎿  Wrote 115 lines to docs\EVALUATION_CHEAT_SHEET.md
+      1 # Lab 5 Evaluation Quick-Reference Cheat Sheet
+      2 **Course:** MCA Trimester 5 — DevOps Lab (Lab 5)
+      3 **Student:** Achindra Sharma — 2547105 — 4MCA A
+      4 **Application:** KubePulse — Deployments, Services, Scaling, Roll
+        ing Updates on a 3-node Kubernetes cluster
+      5 **Dashboard:** `http://localhost:8088`
+      6 
+      7 ---
+      8 
+      9 ## 1. 90-second pitch
+     … +106 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Background command "cd "D:/Downloads/Trimester 5 - DevOps/Lab 5" &&
+  PYTHONIOENCODING=utf-8 python scripts/capture-evidence.py >
+  "$TEMP/capture.log" 2>&1; cat "$TEMP/capture.log"; ls docs/screenshots
+  docs/evidence" completed (exit code 0)
+
+● Capture done. Now step 11 (naive vs production), run separately since the
+  earlier process predated it.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Naive check failed: no response for 90 s after switching to the naive
+  manifest. Debug live.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Cause: Services use targetPort: http (named), the naive manifest left its port
+  unnamed, so zero endpoints. Fix the baseline so it measures only
+  strategy/probes.
+
+  No result recorded for 1 call (ctrl+o to expand)
+  ⎿  $ cd "D:/Downloads/Trimester 5 - DevOps/Lab 5" && python - <<'PY'
+     p='k8s/unoptimized/naive-deployment.yaml'; s=open(p,encoding='utf8').read()…
+  ⎿  Interrupted · What should Claude do instead?
+
+❯ how long will it take                                                         
+
+● About 10–15 minutes of work remain.
+
+  - Naive-vs-production run (rerun after the port-name fix): about 3 minutes. It
+    deletes and recreates the Deployment twice and runs one rolling update each
+    time.
+  - Dashboard screenshot via headless Edge: about 1 minute.
+  - docs/LAB_5_REPORT.md: a few minutes to write, filled with the real numbers
+    from docs/evidence/.
+
+  The naive-manifest fix (naming its port http) is already on disk. Do you want
+  me to go ahead with the rerun? It only touches the kubepulse namespace in the
+  local kind cluster, and it ends on the production manifest.
+
+✻ Baked for 4s · done 8:41 AM
+
+❯ finish it fast                                                                
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Naive: 7 failed. Production: 0. Now the dashboard screenshot.
+
+  Read 1 file, ran 2 shell commands (ctrl+o to expand)
+
+● Write(docs\LAB_5_REPORT.md)
+  ⎿  Wrote 179 lines to docs\LAB_5_REPORT.md
+       1 # Lab 5 Report: Deploying a Containerized Application on Kuberne
+         tes — Deployments, Services, Scaling & Rolling Updates
+       2 
+       3 **Course:** MCA Trimester 5 — DevOps Lab (Lab 5)
+       4 **Submission Type:** Individual Lab Submission
+       5 **Student Name:** Achindra Sharma
+       6 **Register Number:** 2547105
+       7 **Class / Section:** 4MCA A
+       8 **Application:** KubePulse — Kubernetes-aware microservice with
+         a live dashboard
+     … +171 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Lab 5 is done in D:\Downloads\Trimester 5 - DevOps\Lab 5. It runs on a live
+  3-node kind cluster, and all 24 checks passed. The CI workflow, the
+  kubeconform step in it, and the final npm run validate:all chain have not been
+  run.
+
+  What I built:
+  - App: "KubePulse" is a Node.js service plus dashboard that shows which Pod
+    served each request. It has three image releases: v1, v2 and a deliberately
+    broken v3.
+  - Kubernetes setup (k8s/base):
+    - Deployment, with a ConfigMap, a Secret and non-root security settings.
+    - ClusterIP and NodePort Services.
+    - A CPU autoscaler (HPA).
+    - A PodDisruptionBudget.
+  - Four test suites: deployment (9 checks), self-healing (4), rolling update
+    (5) and scaling (6).
+  - Docs: README.md, docs/LAB_5_REPORT.md, docs/SELF_LEARNING.md,
+    docs/EVALUATION_CHEAT_SHEET.md and 12 screenshots.
+
+  The "complexity" part, with measured results:
+  - A rolling update under live traffic served 675 requests with 0 failed.
+  - The broken v3 release stalled, while v2 kept serving 796 requests with 0
+    failed, and rollout undo recovered.
+  - The same update on a naive Deployment (Recreate, no probes) failed 7 of 29
+    requests; the production manifest failed 0 of 910.
+  - The autoscaler scaled out and back in under CPU load.
+  - Deleting a Pod, failing readiness and crashing a container all recovered
+    correctly.
+
+  Differences from Lab 4:
+  - Screenshots are real. Lab 4's generate-screenshots.py drew invented terminal
+    output. Mine (scripts/capture-evidence.py) runs the real commands and
+    renders their actual output. The raw text for each is in docs/evidence/.
+  - Port 8088, not 8080. Lab 4's gateway container still holds host port 8080,
+    so I left it running and used 8088.
+  - Real bugs found and fixed along the way are listed in the report (§8): all
+    requests hitting one Pod because of keep-alive connections, my test freezing
+    its own traffic generator, and the naive manifest getting no traffic.
+
+  Setup and leftovers:
+  - I started Docker Desktop and installed kind via go install into D:\Go\bin.
+  - The cluster is still running; remove it with npm run cluster:delete.
+  - The report has a placeholder for the GitHub link, since there is no git repo
+    yet.
+  - There is no PDF or HTML version of the report. Pandoc is on your PATH if you
+    want one.
+  - The HPA suite takes about 8 minutes, so I left it out of CI.
+
+✻ Crunched for 2m 6s · done 8:44 AM
+
+❯ why difference from lab 4? i gave that as reference only to know how to do    
+  the lab.. this lab has nothing to do with lab 4                               
+
+● Fair point. I only mentioned Lab 4 because I used it as a template, and two
+  things came up while doing that:
+
+  1. Screenshots. Lab 4's screenshot script drew invented output, and I chose
+     not to copy that. Lab 5 doesn't depend on Lab 4 in any way.
+  2. Port 8080. Your Lab 4 containers were still running on this machine and
+     holding that port. It's a local environment clash, not a link between the
+     labs.
+
+  Neither belongs in your submission. I'll check whether Lab 5's docs mention
+  Lab 4 and remove those mentions.
+
+  Searched for 1 pattern, ran 1 shell command (ctrl+o to expand)
+
+● I removed every Lab 4 mention from the Lab 5 README, report and self-learning
+  doc. They now say another container already held host port 8080. Lab 5 is
+  standalone.
+
+  One check I didn't do: the screenshot PNGs. Their captured terminal prompt
+  reads PS Lab 5>, which is just the folder name.
+
+✻ Sautéed for 14s · done 8:48 AM
+
+❯ what about the report for lab 5 that i need to submit                         
+
+● The report is docs/LAB_5_REPORT.md, but Lab 4's submission was a PDF. I'll
+  build 2547105_Lab5.pdf with the screenshots embedded.
+
+  Read 2 files, ran 3 shell commands · 1 failed (ctrl+o to expand)
+
+● Duplicate title; fixing, and cropping the dashboard's empty bottom.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The report is ready to submit at D:\Downloads\Trimester 5 - DevOps\Lab 
+  5\docs\2547105_Lab5.pdf. It is 12 pages with all 12 figures embedded, named
+  like your Lab 4 PDF. I couldn't view the PDF itself (no PDF renderer here). I
+  did check the HTML it was built from, and the layout looked right after I
+  removed a duplicated title.
+
+  The same report also exists as docs/LAB_5_REPORT.md and
+  docs/LAB_5_REPORT.html.
+
+  Do before submitting:
+  1. GitHub link: the header says "add link after pushing". There is no git repo
+     yet, so push it, put the URL in docs/LAB_5_REPORT.md, then rebuild the PDF
+     with the same two commands I used (pandoc, then Edge print-to-PDF).
+  2. Screenshots: all 12 are real command output, but the terminal prompt in
+     them reads PS Lab 5>. If your evaluator expects your own terminal
+     screenshots, retake them with Win + Shift + S. Instructions are in
+     docs/screenshots/README.md.
+
+✻ Churned for 34s · done 8:49 AM
+※ recap: Goal: Lab 5, a Kubernetes lab (Deployments, Services, scaling, rolling updates), is built, validated on a live 3-node cluster, and its report is built as `docs/2547105_Lab5.pdf`. Next, add your GitHub repo link to the report and rebuild the PDF. (turn off recaps in /config)
+
+❯ leave the ss, do the github part                                              
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Logged in; Lab 4's repo is public, so I'll match that. Committing and creating
+  the repo.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Pushed. Now clean the stray __pycache__, add the URL to the report, rebuild
+  the PDF, push again.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The repo is live and public at
+  https://github.com/Achindra2003/devops-lab5-kubernetes-kubepulse, matching Lab
+  4's visibility.
+
+  - Pushed: all the Lab 5 code, manifests, docs, screenshots and evidence on
+    main, committed as Achindra2003.
+  - Link added: the repo URL is now in the report header and the README.
+  - PDF rebuilt: docs/2547105_Lab5.pdf includes the link, and the rebuilt PDF is
+    pushed too.
+  - Cleanup: I removed a stray __pycache__ folder from the repo and added it to
+    .gitignore.
+
+  The GitHub Actions workflow in the repo hasn't run yet. The first run will
+  start on a push to main, and I haven't checked whether it passes. The one
+  thing in it not yet tried locally is the kubeconform schema check.
+
+✻ Churned for 2m 23s · done 8:55 AM
