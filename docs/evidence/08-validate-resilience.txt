@@ -1,0 +1,20 @@
+PS Lab 5> node scripts/validate-resilience.js
+
+===============================================================
+ KUBEPULSE SELF-HEALING & PROBE VALIDATION SUITE
+ Student: Achindra Sharma (2547105) — 4MCA A
+===============================================================
+
+Checking: Deleting a Pod: ReplicaSet recreates it and the Deployment self-heals... [PASS]
+   -> Deleted kubepulse-57cf7c7cc-b6dpb; back to 3/3 Ready pods with a new name
+Checking: Failing readiness removes a Pod from Service endpoints (no restart)... [PASS]
+   -> kubepulse-57cf7c7cc-cz5g2 (10.244.2.25) left endpoints while unready, rejoined when ready, restarts unchanged
+Checking: Crashing a container: kubelet restarts it (restartCount increments)... [PASS]
+   -> kubepulse-57cf7c7cc-cz5g2: restartCount 0 -> 1, Pod Ready again
+Checking: PodDisruptionBudget limits voluntary evictions to 1... [PASS]
+   -> allowed disruptions now: 1, maxUnavailable=1
+
+===============================================================
+ SUMMARY: 4 PASSED, 0 FAILED
+===============================================================
+

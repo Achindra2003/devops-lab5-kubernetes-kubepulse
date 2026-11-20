@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KubePulse — Kubernetes Live Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Kube<span>Pulse</span></h1>
+      <p class="sub">Deployments · Services · Autoscaling · Rolling Updates</p>
+    </div>
+    <div class="who">Achindra Sharma — 2547105 — 4MCA A<br>MCA Trimester 5 · DevOps Lab 5</div>
+  </header>
+
+  <section class="stats">
+    <div class="card"><label>Release</label><b id="version">—</b></div>
+    <div class="card"><label>Pods answering</label><b id="podCount">0</b></div>
+    <div class="card"><label>Requests</label><b id="total">0</b></div>
+    <div class="card"><label>Failed requests</label><b id="failed">0</b></div>
+    <div class="card"><label>Served by (last)</label><b id="lastPod" class="small">—</b></div>
+  </section>
+
+  <section class="card">
+    <h2>Live Service load-balancing <small>(polls <code>/api/info</code> every 400 ms through the Service)</small></h2>
+    <table>
+      <thead><tr><th>Pod</th><th>Node</th><th>Version</th><th>Requests</th><th>Share</th></tr></thead>
+      <tbody id="pods"></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Cluster experiments</h2>
+    <div class="buttons">
+      <button id="burst">Send 100 requests</button>
+      <button id="load">Start CPU load (HPA)</button>
+      <button id="unready">Make one pod unready</button>
+      <button id="crash" class="danger">Crash one pod</button>
+      <button id="reset">Reset counters</button>
+    </div>
+    <p id="msg" class="msg">Try: <code>kubectl -n kubepulse set image deploy/kubepulse app=kubepulse:2.0.0</code> and watch the table change with zero failed requests.</p>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+PS Lab 5> node scripts/validate-rollout.js
+
+===============================================================
+ KUBEPULSE ROLLING UPDATE, FAILURE PROTECTION & ROLLBACK SUITE
+ Student: Achindra Sharma (2547105) — 4MCA A
+===============================================================
+
+Checking: Starting point: v1.0.0 serving... [PASS]
+   -> serving 1.0.0 from kubepulse:1.0.0
+Checking: Rolling update v1 -> v2 with ZERO failed requests... [PASS]
+   -> 675 requests, 0 failed. Served: {"1.0.0":395,"2.0.0":280} (both versions live during the roll)
+Checking: Bad release v3 is stalled by the readiness gate; v2 keeps serving... [PASS]
+   -> rollout stalled (available=3, unavailable=1); 796 requests all served by v2.0.0, 0 failed
+Checking: Rollback: "kubectl rollout undo" restores v2 under traffic, 0 failed... [PASS]
+   -> image back to kubepulse:2.0.0; 8 requests, 0 failed
+Checking: Revision history with change-cause is recorded...       deployment.apps/kubepulse 
+      REVISION  CHANGE-CAUSE
+      1         initial release v1.0.0
+      3         bad release v3.0.0 (never ready)
+      4         rollback to v2.0.0 (rollout undo)
+[PASS]
+   -> rollout history lists each release (kubectl rollout undo --to-revision=N targets any of them)
+
+===============================================================
+ SUMMARY: 5 PASSED, 0 FAILED
+===============================================================
+
+PS Lab 5> kubectl -n kubepulse get rs
+NAME                   DESIRED   CURRENT   READY   AGE
+kubepulse-57cf7c7cc    0         0         0       2m31s
+kubepulse-59c6f445bd   3         3         3       87s
+kubepulse-7cf8cf7ffc   0         0         0       48s
+

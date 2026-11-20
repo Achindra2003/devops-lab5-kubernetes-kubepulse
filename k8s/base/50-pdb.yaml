@@ -1,0 +1,11 @@
+# Voluntary disruptions (node drain, cluster upgrade) may evict at most 1 Pod at a time.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: kubepulse
+  namespace: kubepulse
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: kubepulse

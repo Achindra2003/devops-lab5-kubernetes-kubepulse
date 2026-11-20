@@ -1,0 +1,23 @@
+PS Lab 5> kubectl -n kubepulse get svc,endpoints
+NAME                         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+service/kubepulse            ClusterIP   10.96.39.122   <none>        80/TCP         33s
+service/kubepulse-external   NodePort    10.96.3.130    <none>        80:30080/TCP   33s
+
+NAME                           ENDPOINTS                                            AGE
+endpoints/kubepulse            10.244.1.14:3000,10.244.2.23:3000,10.244.2.24:3000   33s
+endpoints/kubepulse-external   10.244.1.14:3000,10.244.2.23:3000,10.244.2.24:3000   33s
+
+PS Lab 5> node scripts/probe.js 12
+request  1 -> pod=kubepulse-57cf7c7cc-b6dpb  node=kubepulse-worker  version=1.0.0
+request  2 -> pod=kubepulse-57cf7c7cc-xd897  node=kubepulse-worker  version=1.0.0
+request  3 -> pod=kubepulse-57cf7c7cc-b6dpb  node=kubepulse-worker  version=1.0.0
+request  4 -> pod=kubepulse-57cf7c7cc-sshhb  node=kubepulse-worker2  version=1.0.0
+request  5 -> pod=kubepulse-57cf7c7cc-b6dpb  node=kubepulse-worker  version=1.0.0
+request  6 -> pod=kubepulse-57cf7c7cc-xd897  node=kubepulse-worker  version=1.0.0
+request  7 -> pod=kubepulse-57cf7c7cc-sshhb  node=kubepulse-worker2  version=1.0.0
+request  8 -> pod=kubepulse-57cf7c7cc-sshhb  node=kubepulse-worker2  version=1.0.0
+request  9 -> pod=kubepulse-57cf7c7cc-sshhb  node=kubepulse-worker2  version=1.0.0
+request 10 -> pod=kubepulse-57cf7c7cc-b6dpb  node=kubepulse-worker  version=1.0.0
+request 11 -> pod=kubepulse-57cf7c7cc-b6dpb  node=kubepulse-worker  version=1.0.0
+request 12 -> pod=kubepulse-57cf7c7cc-sshhb  node=kubepulse-worker2  version=1.0.0
+

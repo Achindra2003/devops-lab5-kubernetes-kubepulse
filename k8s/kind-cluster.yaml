@@ -1,0 +1,13 @@
+# 3-node cluster (1 control-plane + 2 workers) so scheduling, spreading and
+# node-level failure are real, not simulated.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      # NodePort 30080 inside the cluster -> http://localhost:8088 on the host
+      - containerPort: 30080
+        hostPort: 8088
+        protocol: TCP
+  - role: worker
+  - role: worker

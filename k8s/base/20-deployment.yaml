@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubepulse
+  namespace: kubepulse
+  labels:
+    app: kubepulse
+  annotations:
+    kubernetes.io/change-cause: "initial release v1.0.0"
+spec:
+  # replicas intentionally omitted: the HorizontalPodAutoscaler owns the count.
+  # Setting it here would reset the HPA's scaling on every `kubectl apply`.
+  revisionHistoryLimit: 5          # keep 5 old ReplicaSets so `rollout undo` works
+  minReadySeconds: 5               # a new Pod must stay Ready 5s before it counts as available
+  progressDeadlineSeconds: 60      # mark a stalled rollout as failed after 60s
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1                  # at most 1 extra Pod during an update
+      maxUnavailable: 0            # never dip below desired capacity -> zero downtime
+  selector:
+    matchLabels:
+      app: kubepulse
+  template:
+    metadata:
+      labels:
+        app: kubepulse
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:   # spread replicas across worker nodes
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: kubepulse
+      containers:
+        - name: app
+          image: kubepulse:1.0.0
+          imagePullPolicy: IfNotPresent   # image is loaded into the cluster, not pulled
+          ports:
+            - name: http
+              containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: kubepulse-config
+            - secretRef:
+                name: kubepulse-secret
+          env:                            # Downward API: Pod tells the app who/where it is
+            - name: POD_NAME
+              valueFrom: { fieldRef: { fieldPath: metadata.name } }
+            - name: POD_NAMESPACE
+              valueFrom: { fieldRef: { fieldPath: metadata.namespace } }
+            - name: POD_IP
+              valueFrom: { fieldRef: { fieldPath: status.podIP } }
+            - name: NODE_NAME
+              valueFrom: { fieldRef: { fieldPath: spec.nodeName } }
+          resources:
+            requests: { cpu: 100m, memory: 64Mi }   # HPA % is computed against the CPU request
+            limits: { cpu: 250m, memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          startupProbe:                   # gives slow boots time without loosening liveness
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 1
+            failureThreshold: 30
+          readinessProbe:                 # gate traffic: Pod joins Service endpoints only when Ready
+            httpGet: { path: /readyz, port: http }
+            periodSeconds: 3
+            failureThreshold: 1
+          livenessProbe:                  # restart the container if it hangs
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+            failureThreshold: 3
+          lifecycle:
+            preStop:                      # let endpoint removal propagate before SIGTERM
+              exec: { command: ["sleep", "5"] }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: tmp
+          emptyDir: { medium: Memory, sizeLimit: 16Mi }

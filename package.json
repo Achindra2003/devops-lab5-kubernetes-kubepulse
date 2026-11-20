@@ -1,0 +1,30 @@
+{
+  "name": "devops-lab5-kubernetes-kubepulse",
+  "version": "1.0.0",
+  "description": "KubePulse — Kubernetes Deployments, Services, Scaling (HPA) and Rolling Updates with zero-downtime validation",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/app.test.js",
+    "cluster:create": "kind create cluster --name kubepulse --config k8s/kind-cluster.yaml",
+    "cluster:delete": "kind delete cluster --name kubepulse",
+    "metrics:install": "node scripts/install-metrics-server.js",
+    "image:build": "docker build --build-arg APP_VERSION=1.0.0 -t kubepulse:1.0.0 . && docker build --build-arg APP_VERSION=2.0.0 -t kubepulse:2.0.0 . && docker build --build-arg APP_VERSION=3.0.0 --build-arg BROKEN=true -t kubepulse:3.0.0-broken .",
+    "image:load": "kind load docker-image kubepulse:1.0.0 kubepulse:2.0.0 kubepulse:3.0.0-broken --name kubepulse",
+    "k8s:deploy": "kubectl apply -k k8s/base",
+    "k8s:status": "kubectl -n kubepulse get deploy,rs,pods,svc,hpa,pdb -o wide",
+    "k8s:teardown": "kubectl delete -k k8s/base",
+    "validate:deploy": "node scripts/validate-deployment.js",
+    "validate:rollout": "node scripts/validate-rollout.js",
+    "validate:scaling": "node scripts/validate-scaling.js",
+    "validate:resilience": "node scripts/validate-resilience.js",
+    "compare:naive": "node scripts/compare-naive.js",
+    "probe": "node scripts/probe.js 12",
+    "validate:all": "node scripts/validate-deployment.js && node scripts/validate-resilience.js && node scripts/validate-rollout.js && node scripts/validate-scaling.js",
+    "evidence": "python scripts/capture-evidence.py"
+  },
+  "keywords": ["devops", "kubernetes", "deployment", "hpa", "rolling-update", "kind"],
+  "author": "Achindra Sharma <2547105>",
+  "license": "MIT"
+}

@@ -1,0 +1,28 @@
+PS Lab 5> node scripts/validate-scaling.js
+
+===============================================================
+ KUBEPULSE SCALING VALIDATION SUITE (MANUAL + HPA)
+ Student: Achindra Sharma (2547105) — 4MCA A
+===============================================================
+
+Checking: metrics-server is serving pod metrics... [PASS]
+   -> kubepulse-59c6f445bd-hqxc5 7m 15Mi
+Checking: HPA reports live CPU utilisation... [PASS]
+   -> current CPU 9% (target 50%), replicas 3
+Checking: Manual scale: kubectl scale to 5 works (HPA reclaims control later)... [PASS]
+   -> scaled to 5 ready replicas by hand
+Checking: HPA overrides the manual scale and settles at minReplicas when idle... [PASS]
+   -> HPA scaled 5 -> 3 (scaleDown: 1 pod / 30s after a 60s window)
+Checking: HPA scales OUT under sustained CPU load... [PASS]
+   -> scaled 3 -> 4 replicas (last CPU sample 230%)
+Checking: HPA scales IN after load stops... [PASS]
+   -> scaled in from 6 to 5
+
+===============================================================
+ SUMMARY: 6 PASSED, 0 FAILED
+===============================================================
+
+PS Lab 5> kubectl -n kubepulse get hpa
+NAME        REFERENCE              TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+kubepulse   Deployment/kubepulse   cpu: 1%/50%   3         8         6          8m39s
+

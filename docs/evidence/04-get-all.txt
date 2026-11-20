@@ -1,0 +1,22 @@
+PS Lab 5> kubectl -n kubepulse get deploy,rs,pods,svc,hpa,pdb -o wide
+NAME                        READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES            SELECTOR
+deployment.apps/kubepulse   3/3     3            3           32s   app          kubepulse:1.0.0   app=kubepulse
+
+NAME                                  DESIRED   CURRENT   READY   AGE   CONTAINERS   IMAGES            SELECTOR
+replicaset.apps/kubepulse-57cf7c7cc   3         3         3       32s   app          kubepulse:1.0.0   app=kubepulse,pod-template-hash=57cf7c7cc
+
+NAME                            READY   STATUS    RESTARTS   AGE   IP            NODE                NOMINATED NODE   READINESS GATES
+pod/kubepulse-57cf7c7cc-b6dpb   1/1     Running   0          28s   10.244.2.24   kubepulse-worker    <none>           <none>
+pod/kubepulse-57cf7c7cc-sshhb   1/1     Running   0          28s   10.244.1.14   kubepulse-worker2   <none>           <none>
+pod/kubepulse-57cf7c7cc-xd897   1/1     Running   0          32s   10.244.2.23   kubepulse-worker    <none>           <none>
+
+NAME                         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE   SELECTOR
+service/kubepulse            ClusterIP   10.96.39.122   <none>        80/TCP         32s   app=kubepulse
+service/kubepulse-external   NodePort    10.96.3.130    <none>        80:30080/TCP   32s   app=kubepulse
+
+NAME                                            REFERENCE              TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/kubepulse   Deployment/kubepulse   cpu: <unknown>/50%   3         8         3          32s
+
+NAME                                   MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE
+poddisruptionbudget.policy/kubepulse   N/A             1                 1                     32s
+

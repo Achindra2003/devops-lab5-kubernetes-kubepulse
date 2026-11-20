@@ -1,0 +1,46 @@
+PS Lab 5> kubectl -n kubepulse describe deploy kubepulse
+Name:                   kubepulse
+Namespace:              kubepulse
+CreationTimestamp:      Fri, 20 Nov 2026 08:28:22 +0530
+Labels:                 app=kubepulse
+Annotations:            deployment.kubernetes.io/revision: 1
+                        kubernetes.io/change-cause: initial release v1.0.0
+Selector:               app=kubepulse
+Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        5
+RollingUpdateStrategy:  0 max unavailable, 1 max surge
+Pod Template:
+  Labels:  app=kubepulse
+  Containers:
+   app:
+    Image:      kubepulse:1.0.0
+    Port:       3000/TCP (http)
+    Host Port:  0/TCP (http)
+    Limits:
+      cpu:     250m
+      memory:  128Mi
+    Requests:
+      cpu:      100m
+      memory:   64Mi
+    Liveness:   http-get http://:http/healthz delay=0s timeout=1s period=10s #success=1 #failure=3
+    Readiness:  http-get http://:http/readyz delay=0s timeout=1s period=3s #success=1 #failure=1
+    Startup:    http-get http://:http/healthz delay=0s timeout=1s period=1s #success=1 #failure=30
+    Environment Variables from:
+      kubepulse-config  ConfigMap  Optional: false
+      kubepulse-secret  Secret     Optional: false
+    Environment:
+      POD_NAME:        (v1:metadata.name)
+      POD_NAMESPACE:   (v1:metadata.namespace)
+      POD_IP:          (v1:status.podIP)
+      NODE_NAME:       (v1:spec.nodeName)
+    Mounts:
+      /tmp from tmp (rw)
+  Volumes:
+   tmp:
+    Type:                       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:                     Memory
+    SizeLimit:                  16Mi
+  Topology Spread Constraints:  kubernetes.io/hostname:ScheduleAnyway when max skew 1 is exceeded for selector app=kubepulse
+  Node-Selectors:               <none>
+  Tolerations:                  <none>

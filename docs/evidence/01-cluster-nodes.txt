@@ -1,0 +1,10 @@
+PS Lab 5> kubectl get nodes -o wide
+NAME                      STATUS   ROLES           AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                         KERNEL-VERSION                     CONTAINER-RUNTIME
+kubepulse-control-plane   Ready    control-plane   19m   v1.32.2   172.20.0.4    <none>        Debian GNU/Linux 12 (bookworm)   6.6.87.2-microsoft-standard-WSL2   containerd://2.0.2
+kubepulse-worker          Ready    <none>          19m   v1.32.2   172.20.0.3    <none>        Debian GNU/Linux 12 (bookworm)   6.6.87.2-microsoft-standard-WSL2   containerd://2.0.2
+kubepulse-worker2         Ready    <none>          19m   v1.32.2   172.20.0.2    <none>        Debian GNU/Linux 12 (bookworm)   6.6.87.2-microsoft-standard-WSL2   containerd://2.0.2
+
+PS Lab 5> kubectl -n kube-system get deploy metrics-server
+NAME             READY   UP-TO-DATE   AVAILABLE   AGE
+metrics-server   1/1     1            1           17m
+

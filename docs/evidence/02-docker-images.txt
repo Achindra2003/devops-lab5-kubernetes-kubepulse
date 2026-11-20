@@ -1,0 +1,7 @@
+PS Lab 5> docker images kubepulse
+IMAGE                    ID             DISK USAGE   CONTENT SIZE   EXTRA
+kubepulse:1.0.0          d046e6fbfdfb        232MB         57.8MB        
+kubepulse:2.0.0          364e76616d3c        232MB         57.8MB        
+kubepulse:3.0.0-broken   c72638b65efc        232MB         57.8MB        
+WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+

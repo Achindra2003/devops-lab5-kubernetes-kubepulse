@@ -1,0 +1,21 @@
+# Non-secret configuration, injected as environment variables.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubepulse-config
+  namespace: kubepulse
+data:
+  GREETING: "Hello from KubePulse on Kubernetes"
+  STARTUP_DELAY_MS: "3000"   # simulate a slow boot so startup/readiness probes matter
+  CHAOS_ENABLED: "true"      # lab-only: enables /api/chaos/* endpoints
+---
+# Demo secret only. Real secrets belong in an external store (Vault, Sealed Secrets, ...);
+# base64 in a manifest is encoding, not encryption.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kubepulse-secret
+  namespace: kubepulse
+type: Opaque
+stringData:
+  API_TOKEN: "lab5-demo-token-not-a-real-secret"

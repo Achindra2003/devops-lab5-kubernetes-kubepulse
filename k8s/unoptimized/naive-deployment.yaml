@@ -1,0 +1,35 @@
+# BASELINE ANTI-PATTERN — what a first attempt at a Deployment usually looks like.
+# Used only by scripts/compare-naive.js to measure downtime against k8s/base.
+#
+#  - strategy Recreate        : kills every Pod, then starts new ones -> guaranteed outage
+#  - no readiness probe       : Service routes traffic the moment the container starts
+#  - no liveness/startup probe: a hung process is never restarted
+#  - no resource requests     : scheduler is blind; HPA cannot compute utilisation
+#  - no securityContext       : default (writable rootfs, all default capabilities)
+#  - no preStop / ConfigMap   : no graceful drain, config baked in
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubepulse
+  namespace: kubepulse
+  labels:
+    app: kubepulse
+spec:
+  replicas: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: kubepulse
+  template:
+    metadata:
+      labels:
+        app: kubepulse
+    spec:
+      containers:
+        - name: app
+          image: kubepulse:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http          # must match the Services' named targetPort
+              containerPort: 3000

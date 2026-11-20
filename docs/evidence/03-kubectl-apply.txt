@@ -1,0 +1,10 @@
+PS Lab 5> kubectl apply -k k8s/base
+namespace/kubepulse created
+configmap/kubepulse-config created
+secret/kubepulse-secret created
+service/kubepulse created
+service/kubepulse-external created
+deployment.apps/kubepulse created
+poddisruptionbudget.policy/kubepulse created
+horizontalpodautoscaler.autoscaling/kubepulse created
+

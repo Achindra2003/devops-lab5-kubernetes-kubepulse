@@ -1,0 +1,34 @@
+# Internal virtual IP with DNS name kubepulse.kubepulse.svc.cluster.local
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubepulse
+  namespace: kubepulse
+  labels:
+    app: kubepulse
+spec:
+  type: ClusterIP
+  selector:
+    app: kubepulse
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+# External access: node port 30080 (mapped to http://localhost:8088 by kind-cluster.yaml)
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubepulse-external
+  namespace: kubepulse
+  labels:
+    app: kubepulse
+spec:
+  type: NodePort
+  selector:
+    app: kubepulse
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      nodePort: 30080

@@ -1,0 +1,76 @@
+name: KubePulse Kubernetes CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Job 1: unit tests for the app contract (probes, chaos switch, secret handling)
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
+  # Job 2: static validation of the manifests against the Kubernetes API schema
+  manifest-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kubeconform
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+      - name: Render kustomization and validate (strict)
+        run: kubectl kustomize k8s/base | kubeconform -strict -summary -
+
+  # Job 3: real cluster. kind (3 nodes) -> deploy -> validate -> rolling update/rollback
+  cluster-e2e:
+    needs: [unit-tests, manifest-lint]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Create 3-node kind cluster
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: kubepulse
+          config: k8s/kind-cluster.yaml
+
+      - name: Build the three release images and load them into the cluster
+        run: |
+          npm run image:build
+          npm run image:load
+
+      - name: Install metrics-server
+        run: npm run metrics:install
+
+      - name: Deploy
+        run: |
+          kubectl apply -k k8s/base
+          kubectl -n kubepulse rollout status deploy/kubepulse --timeout=180s
+
+      - name: Validate Deployment, Service, probes, security context
+        run: npm run validate:deploy
+
+      - name: Validate self-healing
+        run: npm run validate:resilience
+
+      - name: Validate zero-downtime rolling update, failed release, rollback
+        run: npm run validate:rollout
+
+      - name: Dump cluster state on failure
+        if: failure()
+        run: |
+          kubectl -n kubepulse get all,hpa,pdb -o wide
+          kubectl -n kubepulse describe deploy kubepulse
+          kubectl -n kubepulse logs -l app=kubepulse --tail=50 --all-containers

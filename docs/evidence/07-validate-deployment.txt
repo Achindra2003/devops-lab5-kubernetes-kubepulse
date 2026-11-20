@@ -1,0 +1,30 @@
+PS Lab 5> node scripts/validate-deployment.js
+
+===============================================================
+ KUBEPULSE DEPLOYMENT & SERVICE VALIDATION SUITE
+ Student: Achindra Sharma (2547105) — 4MCA A
+===============================================================
+
+Checking: Deployment is fully available... [PASS]
+   -> 3/3 replicas available (image kubepulse:1.0.0)
+Checking: Rolling update strategy is zero-downtime (maxUnavailable=0)... [PASS]
+   -> maxSurge=1, maxUnavailable=0
+Checking: Pods are spread across more than one node... [PASS]
+   -> Pods on 2 nodes: kubepulse-worker, kubepulse-worker2
+Checking: Startup, readiness and liveness probes are configured... [PASS]
+   -> readiness=/readyz, liveness=/healthz
+Checking: Containers are hardened (non-root, read-only rootfs, no capabilities)... [PASS]
+   -> UID 1000, readOnlyRootFilesystem=true, capabilities dropped
+Checking: Service endpoints match Ready pods... [PASS]
+   -> 3 endpoint addresses == 3 Ready pods
+Checking: Service DNS resolves inside the cluster (kubepulse.kubepulse.svc)... [PASS]
+   -> GET http://kubepulse.kubepulse.svc.cluster.local/healthz -> {"status":"ok"}
+Checking: NodePort ingress reaches the app and load-balances across Pods... [PASS]
+   -> 60 requests via http://localhost:8088 were served by 3 distinct pods
+Checking: ConfigMap and Secret are injected (secret value never exposed)... [PASS]
+   -> greeting="Hello from KubePulse on Kubernetes", secretConfigured=true
+
+===============================================================
+ SUMMARY: 9 PASSED, 0 FAILED
+===============================================================
+

@@ -1,0 +1,18 @@
+PS Lab 5> node scripts/compare-naive.js
+
+===============================================================
+ NAIVE vs PRODUCTION DEPLOYMENT: DOWNTIME UNDER A v1 -> v2 UPDATE
+ Student: Achindra Sharma (2547105) — 4MCA A
+===============================================================
+
+Checking: Naive manifest (Recreate, no probes) drops requests during the update...    naive     : 29 requests, 7 FAILED (fetch failed, The operation was aborted due to timeout)
+[PASS]
+   -> outage observed: 7 failed requests
+Checking: Production manifest (RollingUpdate, readiness, preStop) drops ZERO requests...    production: 910 requests, 0 FAILED (no errors)
+[PASS]
+   -> no outage: 0 failed requests (naive had 7)
+
+===============================================================
+ SUMMARY: 2 PASSED, 0 FAILED
+===============================================================
+
