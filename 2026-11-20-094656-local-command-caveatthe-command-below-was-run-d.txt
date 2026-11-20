@@ -1,0 +1,1678 @@
+ ▐▛███▛█   Claude Code v2.1.329
+▝▜██████▀  Sonnet 5.5 · Claude Pro
+ ▝▝   ▝▝   D:\Downloads\Trimester 5 - DevOps\Lab 5
+
+
+❯ /model                                                                        
+  ⎿  Set model to Sonnet 5.5 and saved as your default for new sessions
+
+❯ this is lab 5 : Deploy containerized applications on a Kubernetes cluster,    
+  configure Deployments, Services, scaling and rolling updates.                 
+                                                                                
+  check the other lab folders for how labs are supposed to be done; basically   
+  there must be complexities to it and some self learning components, check     
+  like Lab 4 folder for how it's done and especially the docs subfolder that    
+  has the report for that lab, use it as a reference                            
+
+  Searched for 3 patterns, read 2 files, ran 5 shell commands (ctrl+o to expand)
+
+● Reading Lab 4's app code, scripts and screenshot generator to copy its
+  structure. Docker Desktop is off and there is no cluster, so I can't run
+  anything live yet.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(server.js)
+  ⎿  Wrote 146 lines to server.js
+       1 /**
+       2  * KubePulse — Kubernetes-aware microservice (zero dependencies)
+       3  * MCA Trimester 5 - DevOps Lab 5
+       4  * Author: Achindra Sharma (2547105) — 4MCA A
+       5  *
+       6  * The app reports which Pod served each request, so Kubernetes
+         behaviour
+       7  * (load balancing, rolling updates, autoscaling, self-healing)
+         is visible.
+       8  */
+     … +138 lines (ctrl+o to expand)
+
+● Write(package.json)
+  ⎿  Wrote 28 lines to package.json
+       1 {
+       2   "name": "devops-lab5-kubernetes-kubepulse",
+       3   "version": "1.0.0",
+       4   "description": "KubePulse — Kubernetes Deployments, Services, 
+         Scaling (HPA) and Rolling Updates with zero-downtime validation"
+         ,
+       5   "main": "server.js",
+       6   "type": "module",
+       7   "scripts": {
+       8     "start": "node server.js",
+     … +20 lines (ctrl+o to expand)
+
+● Write(Dockerfile)
+  ⎿  Wrote 36 lines to Dockerfile
+      1 # ===============================================================
+        ==========
+      2 # KubePulse image — one Dockerfile, three releases via build args
+        :
+      3 #   v1: docker build --build-arg APP_VERSION=1.0.0 -t kubepulse:1
+        .0.0 .
+      4 #   v2: docker build --build-arg APP_VERSION=2.0.0 -t kubepulse:2
+        .0.0 .
+      5 #   v3: docker build --build-arg APP_VERSION=3.0.0 --build-arg BR
+        OKEN=true \
+     … +31 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(public\index.html)
+  ⎿  Wrote 48 lines to public\index.html
+       1 <!doctype html>
+       2 <html lang="en">
+       3 <head>
+       4   <meta charset="utf-8">
+       5   <meta name="viewport" content="width=device-width, initial-sca
+         le=1">
+       6   <title>KubePulse — Kubernetes Live Dashboard</title>
+       7   <link rel="stylesheet" href="style.css">
+       8 </head>
+       9 <body>
+     … +39 lines (ctrl+o to expand)
+
+● Write(public\style.css)
+  ⎿  Wrote 35 lines to public\style.css
+       1 :root {
+       2   --bg: #0d1117; --panel: #161b22; --border: #30363d;
+       3   --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --ok: #3
+         fb950; --bad: #f85149;
+       4 }
+       5 * { box-sizing: border-box; }
+       6 body { margin: 0; padding: 24px 16px 48px; background: var(--bg)
+         ; color: var(--text);
+       7   font: 15px/1.5 "Segoe UI", system-ui, sans-serif; max-width: 1
+         000px; margin-inline: auto; }
+     … +28 lines (ctrl+o to expand)
+
+● Write(public\app.js)
+  ⎿  Wrote 107 lines to public\app.js
+       1 // KubePulse dashboard: every request goes through the Kubernete
+         s Service,
+       2 // so the table below shows real load balancing across Pods and 
+         live version changes.
+       3 const $ = (id) => document.getElementById(id);
+       4 let pods = {};
+       5 let total = 0;
+       6 let failed = 0;
+       7 let loadWorkers = 0;
+       8 const LOAD_CONCURRENCY = 6;
+     … +99 lines (ctrl+o to expand)
+
+● Write(tests\app.test.js)
+  ⎿  Wrote 61 lines to tests\app.test.js
+       1 import test from 'node:test';
+       2 import assert from 'node:assert/strict';
+       3 
+       4 // Env must be set before server.js is imported (it reads config
+          at load time).
+       5 process.env.APP_VERSION = '9.9.9';
+       6 process.env.POD_NAME = 'test-pod';
+       7 process.env.CHAOS_ENABLED = 'true';
+       8 process.env.API_TOKEN = 'super-secret';
+       9 
+     … +52 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Directory arg unsupported in Node 22; point at the file.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Write(scripts\lib.js)
+  ⎿  Wrote 84 lines to scripts\lib.js
+       1 // Shared helpers for the validation suites.
+       2 import { execFileSync } from 'node:child_process';
+       3 
+       4 export const NS = 'kubepulse';
+       5 export const URL_BASE = process.env.KUBEPULSE_URL || 'http://loc
+         alhost:8080';
+       6 
+       7 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms
+         ));
+       8 
+     … +76 lines (ctrl+o to expand)
+
+  Ran 2 shell commands · 1 failed (ctrl+o to expand)
+
+● Nothing written; use Write per file.
+
+● Write(scripts\install-metrics-server.js)
+  ⎿  Wrote 15 lines to scripts\install-metrics-server.js
+       1 // metrics-server feeds CPU/memory numbers to the HPA. kind's ku
+         belets use self-signed
+       2 // certs, so --kubelet-insecure-tls is required (lab clusters on
+         ly — never in production).
+       3 import { execFileSync } from 'node:child_process';
+       4 
+       5 const VERSION = 'v0.7.2';
+       6 const kubectl = (...a) => execFileSync('kubectl', a, { encoding:
+          'utf8' }).trim();
+       7 const run = (...a) => console.log(kubectl(...a));
+     … +8 lines (ctrl+o to expand)
+
+● Write(scripts\validate-deployment.js)
+  ⎿  Wrote 74 lines to scripts\validate-deployment.js
+       1 /** Validates Deployment, Service, probes, security context and 
+         load balancing. */
+       2 import { createSuite, kjson, kns, get, waitFor, NS } from './lib
+         .js';
+       3 
+       4 const s = createSuite('KUBEPULSE DEPLOYMENT & SERVICE VALIDATION
+          SUITE');
+       5 const dep = () => kjson('-n', NS, 'get', 'deploy', 'kubepulse');
+       6 const pods = () => kjson('-n', NS, 'get', 'pods', '-l', 'app=kub
+         epulse').items;
+     … +68 lines (ctrl+o to expand)
+
+● Write(scripts\validate-resilience.js)
+  ⎿  Wrote 51 lines to scripts\validate-resilience.js
+       1 /** Self-healing: pod deletion, readiness removal from endpoints
+         , crash restart. */
+       2 import { createSuite, kjson, kns, waitFor, NS } from './lib.js';
+       3 
+       4 const s = createSuite('KUBEPULSE SELF-HEALING & PROBE VALIDATION
+          SUITE');
+       5 const pods = () => kjson('-n', NS, 'get', 'pods', '-l', 'app=kub
+         epulse').items;
+       6 const isReady = (p) => p.status.conditions?.some((c) => c.type =
+         == 'Ready' && c.status === 'True');
+     … +45 lines (ctrl+o to expand)
+
+● Write(scripts\validate-rollout.js)
+  ⎿  Wrote 62 lines to scripts\validate-rollout.js
+       1 /**
+       2  * Rolling update + failed-release protection + rollback, all un
+         der live traffic.
+       3  * Expects the Deployment to start on kubepulse:1.0.0. Leaves it
+          on 2.0.0.
+       4  */
+       5 import { createSuite, kns, kjson, get, startTraffic, waitFor, sl
+         eep, NS } from './lib.js';
+       6 
+       7 const s = createSuite('KUBEPULSE ROLLING UPDATE, FAILURE PROTECT
+     … +56 lines (~3 KB) (ctrl+o to expand)
+
+● Write(scripts\validate-scaling.js)
+  ⎿  Wrote 49 lines to scripts\validate-scaling.js
+       1 /** Manual scaling, then HPA-driven scale-out under CPU load and
+          scale-in afterwards. */
+       2 import { createSuite, kns, kjson, waitFor, startTraffic, NS } fr
+         om './lib.js';
+       3 
+       4 const s = createSuite('KUBEPULSE SCALING VALIDATION SUITE (MANUA
+         L + HPA)');
+       5 const dep = () => kjson('-n', NS, 'get', 'deploy', 'kubepulse');
+       6 const hpa = () => kjson('-n', NS, 'get', 'hpa', 'kubepulse');
+       7 const min = hpa().spec.minReplicas;
+     … +42 lines (ctrl+o to expand)
+● Code written. Now run it for real: start Docker Desktop and get kind.
+
+  Ran 5 shell commands (ctrl+o to expand)
+
+● Lab 4's gateway holds :8080. I'll leave it running and map Lab 5 to :8088.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Cluster up. Load images, install metrics-server, deploy.
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Sequential keep-alive requests all hit one pod because kube-proxy balances per
+  TCP connection, not per request. I'm making the API send Connection: close so
+  each request gets balanced, and documenting why. · summary
+
+● Update(server.js)
+  ⎿  Added 3 lines
+      47    res.writeHead(status, {
+      48      'Content-Type': 'application/json; charset=utf-8',
+      49      'Cache-Control': 'no-store',
+      50 +    // kube-proxy balances per TCP *connection*; a keep-alive c
+         +lient would stick to one Pod.                                  
+      51 +    // Closing after each API response makes every request re-b
+         +alance (and re-resolve during rollouts).                       
+      52 +    Connection: 'close',                                       
+      53      'X-Served-By': process.env.POD_NAME || os.hostname(),
+      54    });
+      55    res.end(JSON.stringify(body));
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Earlier fail was a race with a terminating pod. Make the suites ignore
+  terminating pods.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(scripts\validate-deployment.js)
+  ⎿  Added 7 lines, removed 6 lines
+      43    return `UID ${uid}, readOnlyRootFilesystem=true, capabilities
+           dropped`;
+      44  });
+      45 
+      46 -await s.check('Service endpoints match Ready pods', () => {    
+      47 -  const ready = pods().filter(isReady).length;                 
+      48 -  const ep = kjson('-n', NS, 'get', 'endpoints', 'kubepulse'); 
+      49 -  const n = ep.subsets?.[0]?.addresses?.length ?? 0;           
+      50 -  if (n !== ready) throw new Error(`endpoints=${n}, ready pods=
+         -${ready}`);                                                    
+      51 -  return `${n} endpoint addresses == ${ready} Ready pods`;     
+      46 +await s.check('Service endpoints match Ready pods', async () =>
+         + {                                                             
+      47 +  const counts = () => ({                                      
+      48 +    ready: pods().filter(isReady).length,                      
+      49 +    n: kjson('-n', NS, 'get', 'endpoints', 'kubepulse').subsets
+         +?.[0]?.addresses?.length ?? 0,                                 
+      50 +  });                                                          
+      51 +  const c = await waitFor('endpoints == ready pods', () => { co
+         +nst x = counts(); return x.n === x.ready && x; }, { timeoutMs: 
+         +20000, everyMs: 1000 });                                       
+      52 +  return `${c.n} endpoint addresses == ${c.ready} Ready pods`; 
+      53  });
+      54 
+      55  await s.check('Service DNS resolves inside the cluster (kubepul
+          se.kubepulse.svc)', () => {
+
+● Now the main event: rollout suite, then scaling.
+
+  Ran 1 shell command · 1 failed (ctrl+o to expand)
+
+● The rewrite I'd produce for that narration is: "The test failure is on my
+  side, not the cluster: execFileSync inside rollout status blocks the event
+  loop and stalls the traffic generator. I'll make the long kubectl calls async
+  and annotate before set image so the change-cause lands on the right
+  revision." · summary
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Revision labels are muddled by a controller race. Use one atomic patch for
+  image + change-cause, and annotate after undo.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Rollout suite green. Now scaling (HPA), run in background.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● All four suites pass on the live 3-node cluster, and I'm now replacing the
+  lab's invented screenshot output with a script that captures the real
+  commands. · summary
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(scripts\probe.js)
+  ⎿  Wrote 8 lines to scripts\probe.js
+      1 // Prints which Pod answered each request through the Service. Us
+        age: node scripts/probe.js [count]
+      2 import { get } from './lib.js';
+      3 
+      4 const n = parseInt(process.argv[2] || '10', 10);
+      5 for (let i = 1; i <= n; i++) {
+      6   const d = await get();
+      7   console.log(`request ${String(i).padStart(2)} -> pod=${d.pod}  
+        node=${d.node}  version=${d.version}`);
+      8 }
+
+● Write(scripts\capture-evidence.py)
+  ⎿  Wrote 131 lines to scripts\capture-evidence.py
+       1 """
+       2 Captures REAL evidence for the Lab 5 report.
+       3 
+       4 Runs each command against the live cluster, stores the raw outpu
+         t in
+       5 docs/evidence/*.txt and renders it as a terminal-style PNG in do
+         cs/screenshots/.
+       6 Nothing here is hand-written output: if a command fails, the fai
+         lure is what gets rendered.
+       7 
+     … +124 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(.github\workflows\k8s-ci.yml)
+  ⎿  Wrote 76 lines to .github\workflows\k8s-ci.yml
+       1 name: KubePulse Kubernetes CI
+       2 
+       3 on:
+       4   push:
+       5     branches: [main, develop]
+       6   pull_request:
+       7     branches: [main]
+       8 
+       9 jobs:
+      10   # Job 1: unit tests for the app contract (probes, chaos switch
+     … +67 lines (~2 KB) (ctrl+o to expand)
+
+● While capture runs, add a naive-Deployment baseline (Lab 4 had an
+  "unoptimized" comparison; this gives a measured one).
+
+● Write(k8s\unoptimized\naive-deployment.yaml)
+  ⎿  Wrote 34 lines to k8s\unoptimized\naive-deployment.yaml
+       1 # BASELINE ANTI-PATTERN — what a first attempt at a Deployment u
+         sually looks like.
+       2 # Used only by scripts/compare-naive.js to measure downtime agai
+         nst k8s/base.
+       3 #
+       4 #  - strategy Recreate        : kills every Pod, then starts new
+          ones -> guaranteed outage
+       5 #  - no readiness probe       : Service routes traffic the momen
+         t the container starts
+       6 #  - no liveness/startup probe: a hung process is never restarte
+     … +29 lines (ctrl+o to expand)
+
+● Write(scripts\compare-naive.js)
+  ⎿  Wrote 40 lines to scripts\compare-naive.js
+       1 /**
+       2  * Measured baseline: the same v1 -> v2 update done with a naive
+          Deployment (Recreate, no probes)
+       3  * versus the production manifest (RollingUpdate, maxUnavailable
+         =0, readiness, preStop).
+       4  * Leaves the cluster on the production manifest.
+       5  */
+       6 import { createSuite, kns, knsAsync, kubectl, get, startTraffic,
+          waitFor, sleep } from './lib.js';
+       7 
+     … +33 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(README.md)
+  ⎿  Wrote 135 lines to README.md
+       1 # KubePulse — Kubernetes Deployments, Services, Scaling & Rollin
+         g Updates
+       2 
+       3 > **DevOps Lab 5:** Deploy containerized applications on a Kuber
+         netes cluster, configure Deployments, Services, scaling and roll
+         ing updates.
+       4 > **Course:** MCA Trimester 5 — DevOps Lab
+       5 > **Student:** Achindra Sharma (2547105) — 4MCA A
+       6 > **Live dashboard:** [http://localhost:8088](http://localhost:8
+         088) (after deployment)
+     … +129 lines (ctrl+o to expand)
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+● Write(docs\SELF_LEARNING.md)
+  ⎿  Wrote 166 lines to docs\SELF_LEARNING.md
+       1 # Self-Learning Report: Production-Grade Kubernetes Deployment E
+         ngineering
+       2 
+       3 **Course:** MCA Trimester 5 — DevOps Lab (Lab 5)
+       4 **Student Name:** Achindra Sharma (2547105) — 4MCA A
+       5 **Application:** KubePulse — Kubernetes-aware microservice with
+         live dashboard
+       6 **Context:** Deploying containerized applications on Kubernetes:
+          Deployments, Services, scaling, rolling updates
+       7 
+     … +159 lines (ctrl+o to expand)
+
+● Evidence capture still running against the cluster; docs are being written
+  meanwhile. Checking progress.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(docs\screenshots\README.md)
+  ⎿  Wrote 26 lines to docs\screenshots\README.md
+       1 # Evidence Guide — Real Captures
+       2 
+       3 **Course:** MCA Trimester 5 — DevOps Lab (Lab 5)
+       4 **Student:** Achindra Sharma (2547105) — 4MCA A
+       5 
+       6 Every figure is generated from **real command output** against t
+         he live cluster by `scripts/capture-evidence.py`. The raw text f
+         or each figure is saved next to it in [`../evidence/`](../eviden
+         ce) so any figure can be checked against its source. Nothing is
+         typed or edited by hand. To regenerate: `python scripts/capture-
+     … +21 lines (~2 KB) (ctrl+o to expand)
+
+● Write(docs\EVALUATION_CHEAT_SHEET.md)
+  ⎿  Wrote 115 lines to docs\EVALUATION_CHEAT_SHEET.md
+      1 # Lab 5 Evaluation Quick-Reference Cheat Sheet
+      2 **Course:** MCA Trimester 5 — DevOps Lab (Lab 5)
+      3 **Student:** Achindra Sharma — 2547105 — 4MCA A
+      4 **Application:** KubePulse — Deployments, Services, Scaling, Roll
+        ing Updates on a 3-node Kubernetes cluster
+      5 **Dashboard:** `http://localhost:8088`
+      6 
+      7 ---
+      8 
+      9 ## 1. 90-second pitch
+     … +106 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Background command "cd "D:/Downloads/Trimester 5 - DevOps/Lab 5" &&
+  PYTHONIOENCODING=utf-8 python scripts/capture-evidence.py >
+  "$TEMP/capture.log" 2>&1; cat "$TEMP/capture.log"; ls docs/screenshots
+  docs/evidence" completed (exit code 0)
+
+● Capture done. Now step 11 (naive vs production), run separately since the
+  earlier process predated it.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Naive check failed: no response for 90 s after switching to the naive
+  manifest. Debug live.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Cause: Services use targetPort: http (named), the naive manifest left its port
+  unnamed, so zero endpoints. Fix the baseline so it measures only
+  strategy/probes.
+
+  No result recorded for 1 call (ctrl+o to expand)
+  ⎿  $ cd "D:/Downloads/Trimester 5 - DevOps/Lab 5" && python - <<'PY'
+     p='k8s/unoptimized/naive-deployment.yaml'; s=open(p,encoding='utf8').read()…
+  ⎿  Interrupted · What should Claude do instead?
+
+❯ how long will it take                                                         
+
+● About 10–15 minutes of work remain.
+
+  - Naive-vs-production run (rerun after the port-name fix): about 3 minutes. It
+    deletes and recreates the Deployment twice and runs one rolling update each
+    time.
+  - Dashboard screenshot via headless Edge: about 1 minute.
+  - docs/LAB_5_REPORT.md: a few minutes to write, filled with the real numbers
+    from docs/evidence/.
+
+  The naive-manifest fix (naming its port http) is already on disk. Do you want
+  me to go ahead with the rerun? It only touches the kubepulse namespace in the
+  local kind cluster, and it ends on the production manifest.
+
+✻ Baked for 4s · done 8:41 AM
+
+❯ finish it fast                                                                
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Naive: 7 failed. Production: 0. Now the dashboard screenshot.
+
+  Read 1 file, ran 2 shell commands (ctrl+o to expand)
+
+● Write(docs\LAB_5_REPORT.md)
+  ⎿  Wrote 179 lines to docs\LAB_5_REPORT.md
+       1 # Lab 5 Report: Deploying a Containerized Application on Kuberne
+         tes — Deployments, Services, Scaling & Rolling Updates
+       2 
+       3 **Course:** MCA Trimester 5 — DevOps Lab (Lab 5)
+       4 **Submission Type:** Individual Lab Submission
+       5 **Student Name:** Achindra Sharma
+       6 **Register Number:** 2547105
+       7 **Class / Section:** 4MCA A
+       8 **Application:** KubePulse — Kubernetes-aware microservice with
+         a live dashboard
+     … +171 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Lab 5 is done in D:\Downloads\Trimester 5 - DevOps\Lab 5. It runs on a live
+  3-node kind cluster, and all 24 checks passed. The CI workflow, the
+  kubeconform step in it, and the final npm run validate:all chain have not been
+  run.
+
+  What I built:
+  - App: "KubePulse" is a Node.js service plus dashboard that shows which Pod
+    served each request. It has three image releases: v1, v2 and a deliberately
+    broken v3.
+  - Kubernetes setup (k8s/base):
+    - Deployment, with a ConfigMap, a Secret and non-root security settings.
+    - ClusterIP and NodePort Services.
+    - A CPU autoscaler (HPA).
+    - A PodDisruptionBudget.
+  - Four test suites: deployment (9 checks), self-healing (4), rolling update
+    (5) and scaling (6).
+  - Docs: README.md, docs/LAB_5_REPORT.md, docs/SELF_LEARNING.md,
+    docs/EVALUATION_CHEAT_SHEET.md and 12 screenshots.
+
+  The "complexity" part, with measured results:
+  - A rolling update under live traffic served 675 requests with 0 failed.
+  - The broken v3 release stalled, while v2 kept serving 796 requests with 0
+    failed, and rollout undo recovered.
+  - The same update on a naive Deployment (Recreate, no probes) failed 7 of 29
+    requests; the production manifest failed 0 of 910.
+  - The autoscaler scaled out and back in under CPU load.
+  - Deleting a Pod, failing readiness and crashing a container all recovered
+    correctly.
+
+  Differences from Lab 4:
+  - Screenshots are real. Lab 4's generate-screenshots.py drew invented terminal
+    output. Mine (scripts/capture-evidence.py) runs the real commands and
+    renders their actual output. The raw text for each is in docs/evidence/.
+  - Port 8088, not 8080. Lab 4's gateway container still holds host port 8080,
+    so I left it running and used 8088.
+  - Real bugs found and fixed along the way are listed in the report (§8): all
+    requests hitting one Pod because of keep-alive connections, my test freezing
+    its own traffic generator, and the naive manifest getting no traffic.
+
+  Setup and leftovers:
+  - I started Docker Desktop and installed kind via go install into D:\Go\bin.
+  - The cluster is still running; remove it with npm run cluster:delete.
+  - The report has a placeholder for the GitHub link, since there is no git repo
+    yet.
+  - There is no PDF or HTML version of the report. Pandoc is on your PATH if you
+    want one.
+  - The HPA suite takes about 8 minutes, so I left it out of CI.
+
+✻ Crunched for 2m 6s · done 8:44 AM
+
+❯ why difference from lab 4? i gave that as reference only to know how to do    
+  the lab.. this lab has nothing to do with lab 4                               
+
+● Fair point. I only mentioned Lab 4 because I used it as a template, and two
+  things came up while doing that:
+
+  1. Screenshots. Lab 4's screenshot script drew invented output, and I chose
+     not to copy that. Lab 5 doesn't depend on Lab 4 in any way.
+  2. Port 8080. Your Lab 4 containers were still running on this machine and
+     holding that port. It's a local environment clash, not a link between the
+     labs.
+
+  Neither belongs in your submission. I'll check whether Lab 5's docs mention
+  Lab 4 and remove those mentions.
+
+  Searched for 1 pattern, ran 1 shell command (ctrl+o to expand)
+
+● I removed every Lab 4 mention from the Lab 5 README, report and self-learning
+  doc. They now say another container already held host port 8080. Lab 5 is
+  standalone.
+
+  One check I didn't do: the screenshot PNGs. Their captured terminal prompt
+  reads PS Lab 5>, which is just the folder name.
+
+✻ Sautéed for 14s · done 8:48 AM
+
+❯ what about the report for lab 5 that i need to submit                         
+
+● The report is docs/LAB_5_REPORT.md, but Lab 4's submission was a PDF. I'll
+  build 2547105_Lab5.pdf with the screenshots embedded.
+
+  Read 2 files, ran 3 shell commands · 1 failed (ctrl+o to expand)
+
+● Duplicate title; fixing, and cropping the dashboard's empty bottom.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The report is ready to submit at D:\Downloads\Trimester 5 - DevOps\Lab 
+  5\docs\2547105_Lab5.pdf. It is 12 pages with all 12 figures embedded, named
+  like your Lab 4 PDF. I couldn't view the PDF itself (no PDF renderer here). I
+  did check the HTML it was built from, and the layout looked right after I
+  removed a duplicated title.
+
+  The same report also exists as docs/LAB_5_REPORT.md and
+  docs/LAB_5_REPORT.html.
+
+  Do before submitting:
+  1. GitHub link: the header says "add link after pushing". There is no git repo
+     yet, so push it, put the URL in docs/LAB_5_REPORT.md, then rebuild the PDF
+     with the same two commands I used (pandoc, then Edge print-to-PDF).
+  2. Screenshots: all 12 are real command output, but the terminal prompt in
+     them reads PS Lab 5>. If your evaluator expects your own terminal
+     screenshots, retake them with Win + Shift + S. Instructions are in
+     docs/screenshots/README.md.
+
+✻ Churned for 34s · done 8:49 AM
+※ recap: Goal: Lab 5, a Kubernetes lab (Deployments, Services, scaling, rolling updates), is built, validated on a live 3-node cluster, and its report is built as `docs/2547105_Lab5.pdf`. Next, add your GitHub repo link to the report and rebuild the PDF. (turn off recaps in /config)
+
+❯ leave the ss, do the github part                                              
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Logged in; Lab 4's repo is public, so I'll match that. Committing and creating
+  the repo.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Pushed. Now clean the stray __pycache__, add the URL to the report, rebuild
+  the PDF, push again.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The repo is live and public at
+  https://github.com/Achindra2003/devops-lab5-kubernetes-kubepulse, matching Lab
+  4's visibility.
+
+  - Pushed: all the Lab 5 code, manifests, docs, screenshots and evidence on
+    main, committed as Achindra2003.
+  - Link added: the repo URL is now in the report header and the README.
+  - PDF rebuilt: docs/2547105_Lab5.pdf includes the link, and the rebuilt PDF is
+    pushed too.
+  - Cleanup: I removed a stray __pycache__ folder from the repo and added it to
+    .gitignore.
+
+  The GitHub Actions workflow in the repo hasn't run yet. The first run will
+  start on a push to main, and I haven't checked whether it passes. The one
+  thing in it not yet tried locally is the kubeconform schema check.
+
+✻ Churned for 2m 23s · done 8:55 AM
+
+❯ /export                                                                       
+  ⎿  Conversation exported to D:\Downloads\Trimester 5 - DevOps\Lab
+     5\2026-11-20-085804-local-command-caveatthe-command-below-was-run-d.txt
+
+※ recap: Goal: finish Lab 5, a Kubernetes lab with KubePulse, a report PDF and a GitHub repo. All of it is done and pushed. Next action: check the first GitHub Actions run on the new repo and fix anything that fails. (turn off recaps in /config)
+
+❯ you should've followed the lab 4 report style and format and rigor aswell     
+  no..                                                                          
+
+● Yes. Lab 4's report has screenshot instruction blocks, the baseline and
+  production manifests embedded, an ASCII topology, a stated methodology and a
+  Key Learnings section, and I skipped most of that. I'll rewrite it in that
+  structure, using the real numbers.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(docs\LAB_5_REPORT.md)
+  ⎿  Couldn't write file
+
+  Read 1 file (ctrl+o to expand)
+
+● Write(docs\LAB_5_REPORT.md)
+  ⎿  Added 365 lines, removed 107 lines
+        1 -# Lab 5 Report: Deploying a Containerized Application on Kuber
+          -netes — Deployments, Services, Scaling & Rolling Updates      
+        1 +# Lab 5 Report: Kubernetes Deployments, Services, Autoscaling 
+          +& Zero-Downtime Rolling Updates                               
+        2 
+        3  **Course:** MCA Trimester 5 — DevOps Lab (Lab 5)
+        4  **Submission Type:** Individual Lab Submission
+        5  **Student Name:** Achindra Sharma
+        6  **Register Number:** 2547105
+        7  **Class / Section:** 4MCA A
+        8 -**Application:** KubePulse — Kubernetes-aware microservice wit
+          -h a live dashboard                                            
+        9 -**Cluster:** kind v0.27.0, Kubernetes v1.32.2, 3 nodes (1 cont
+          -rol-plane, 2 workers)                                         
+       10 -**Dashboard URL:** `http://localhost:8088`                    
+       11 -**GitHub Repository:** [https://github.com/Achindra2003/devops
+          --lab5-kubernetes-kubepulse](https://github.com/Achindra2003/de
+          -vops-lab5-kubernetes-kubepulse)                               
+        8 +**Application:** KubePulse — Kubernetes-Aware Microservice wit
+          +h Probe-Gated Rollouts, HPA Autoscaling & Chaos-Verified Self-
+          +Healing                                                       
+        9 +**GitHub Repository:** [https://github.com/Achindra2003/devops
+          +-lab5-kubernetes-kubepulse](https://github.com/Achindra2003/de
+          +vops-lab5-kubernetes-kubepulse)                               
+       10 +**Cluster Launch Command:** `npm run cluster:create` then `npm
+          + run k8s:deploy`                                              
+       11 +**Ingress Portal URL:** `http://localhost:8088`               
+       12 
+       13 -All figures below are real command output captured by `scripts
+          -/capture-evidence.py`; the raw text for each is in `docs/evide
+          -nce/`.                                                        
+       13 +> **Evidence policy.** Every figure in this report is real com
+          +mand output captured from the running cluster by `scripts/capt
+          +ure-evidence.py`. The raw text behind each figure is stored in
+          + `docs/evidence/NN-*.txt`. No output was typed or edited by ha
+          +nd.                                                           
+       14 
+       15  ---
+       16 
+       17 -## 1. Project Background                                      
+       17 +## 1. Project Background & System Context                     
+       18 
+       19 -A minimal Kubernetes lab runs `kubectl create deployment`, exp
+          -oses it, scales it and changes the image once. That shows the 
+          -commands but not the engineering questions: *is an update safe
+          -, what happens when a release is bad, how does the cluster rea
+          -ct to load and failure?* This lab answers each with a measurem
+          -ent.                                                          
+       19 +### The Challenge with Naive Kubernetes Deployments           
+       20 +The usual first Kubernetes exercise is `kubectl create deploym
+          +ent`, `kubectl expose` and one `kubectl scale`. The commands w
+          +ork, but the manifest that results has serious operational wea
+          +knesses:                                                      
+       21 
+       21 -**KubePulse** is a zero-dependency Node.js service that report
+          -s the Pod, node and version that served each request, exposes 
+          -readiness/liveness endpoints, can burn CPU on demand (for the 
+          -autoscaler) and has lab-only chaos endpoints (unready, crash).
+          - One Dockerfile produces three releases: `1.0.0`, `2.0.0`, and
+          - `3.0.0-broken` (alive but never Ready).                      
+       22 +1. **Update Outages:** The `Recreate` strategy (or an unprobed
+          + rolling update) removes capacity before replacements are read
+          +y. Users see connection errors on every release.              
+       23 +2. **Traffic to Unready Pods:** Without a readiness probe, a S
+          +ervice routes requests to a container the moment it starts, be
+          +fore the application can answer.                              
+       24 +3. **Bad Releases Take Capacity Away:** Without a progress dea
+          +dline and `maxUnavailable: 0`, a broken image replaces healthy
+          + Pods, turning a deploy into an incident.                     
+       25 +4. **Static Capacity:** A fixed replica count wastes resources
+          + when idle and saturates under load; without CPU requests the 
+          +autoscaler cannot work at all.                                
+       26 +5. **Unhardened Containers:** Default security context leaves 
+          +a writable root filesystem, default Linux capabilities and no 
+          +seccomp profile.                                              
+       27 
+       23 -![Figure 12: KubePulse dashboard](screenshots/12-kubepulse-das
+          -hboard.png)                                                   
+       24 -*Figure 1: Live dashboard through the Service. Three Pods on t
+          -wo workers, release 2.0.0, 0 failed requests.*                
+       28 +### What We Built: KubePulse                                  
+       29 +To demonstrate and *measure* the fixes, we built **KubePulse**
+          +, a zero-dependency Node.js microservice that reports the Pod,
+          + node and release that served each request, together with a Ku
+          +bernetes platform around it:                                  
+       30 +- **Application:** `/api/info` (Pod identity via the Downward 
+          +API), `/readyz` and `/healthz` probes, `/api/load` (on-demand 
+          +CPU burn for the autoscaler), lab-only `/api/chaos/*` endpoint
+          +s, graceful `SIGTERM` draining.                               
+       31 +- **Three releases from one Dockerfile:** `1.0.0`, `2.0.0` and
+          + `3.0.0-broken` (alive but never Ready).                      
+       32 +- **Cluster:** a real 3-node kind cluster (1 control-plane, 2 
+          +workers).                                                     
+       33 +- **Workload objects:** Namespace, ConfigMap, Secret, Deployme
+          +nt, ClusterIP + NodePort Services, HorizontalPodAutoscaler, Po
+          +dDisruptionBudget — applied with kustomize.                   
+       34 +- **Automation:** four validation suites (24 checks), a measur
+          +ed naive-vs-production experiment and a CI pipeline.          
+       35 
+       36 +### Experimental Environment                                  
+       37 +                                                              
+       38 +| Component | Version / Detail |                              
+       39 +| :--- | :--- |                                               
+       40 +| Host OS | Windows 11, Docker Desktop (engine 29.1.3, WSL2 ba
+          +ckend) |                                                      
+       41 +| Cluster | kind v0.27.0 — Kubernetes v1.32.2, containerd 2.0.
+          +2 |                                                           
+       42 +| Nodes | `kubepulse-control-plane`, `kubepulse-worker`, `kube
+          +pulse-worker2` |                                              
+       43 +| Client tools | kubectl v1.34.1 (Kustomize v5.7.1), Node.js v
+          +22.17.0 |                                                     
+       44 +| Image base | `node:22-alpine` (57.8 MB content, 232 MB on di
+          +sk) |                                                         
+       45 +| metrics-server | v0.7.2, patched with `--kubelet-insecure-tl
+          +s` (lab only) |                                               
+       46 +                                                              
+       47  ---
+       48 
+       28 -## 2. Cluster and Deployment                                  
+       49 +> ### 📸 Screenshot 1 Instruction: Interactive KubePulse Live 
+          +Dashboard                                                     
+       50 +> * **What to capture:** Browser showing the dashboard at `htt
+          +p://localhost:8088`.                                          
+       51 +> * **How to take it:** With the cluster running, open the URL
+          +, click **Send 100 requests**, and press `Win + Shift + S`.   
+       52 +> * **What evaluators check:** URL on port 8088, student attri
+          +bution (`Achindra Sharma — 2547105 — 4MCA A`), the Release car
+          +d, the per-Pod table showing different Pods and nodes, and **F
+          +ailed requests: 0**.                                          
+       53 +> * **File destination:** `docs/screenshots/12-kubepulse-dashb
+          +oard.png`.                                                    
+       54 
+       30 -A 3-node kind cluster (`k8s/kind-cluster.yaml`) gives real sch
+          -eduling and node spread. The NodePort is published on host por
+          -t 8088 (8080 was already in use on the host).                 
+       55 +![Screenshot 12: KubePulse Live Dashboard](screenshots/12-kube
+          +pulse-dashboard.png)                                          
+       56 +*Figure 1: Dashboard served through the Kubernetes Service. Th
+          +ree Pods across two worker nodes, release 2.0.0, 0 failed requ
+          +ests.*                                                        
+       57 
+       32 -![Figure 1: Cluster nodes](screenshots/01-cluster-nodes.png)  
+       33 -*Figure 2: Three Ready nodes, Kubernetes v1.32.2; metrics-serv
+          -er installed.*                                                
+       58 +---                                                           
+       59 
+       35 -![Figure 2: Images](screenshots/02-docker-images.png)         
+       36 -*Figure 3: Three release images from one Dockerfile (build arg
+          -s `APP_VERSION`, `BROKEN`).*                                  
+       60 +## 2. Cluster Provisioning & Image Release Pipeline           
+       61 
+       38 -The application is deployed declaratively with kustomize (`kub
+          -ectl apply -k k8s/base`): Namespace, ConfigMap, Secret, Deploy
+          -ment, two Services, HorizontalPodAutoscaler and PodDisruptionB
+          -udget.                                                        
+       62 +A single-node cluster cannot demonstrate scheduling, node spre
+          +ad or node-level failure, so the lab uses a 3-node cluster def
+          +ined in `k8s/kind-cluster.yaml`. A host port mapping publishes
+          + NodePort `30080` as `localhost:8088`.                        
+       63 
+       40 -![Figure 3: kubectl apply](screenshots/03-kubectl-apply.png)  
+       41 -*Figure 4: Declarative deployment.*                           
+       64 +```yaml                                                       
+       65 +kind: Cluster                                                 
+       66 +apiVersion: kind.x-k8s.io/v1alpha4                            
+       67 +nodes:                                                        
+       68 +  - role: control-plane                                       
+       69 +    extraPortMappings:                                        
+       70 +      - { containerPort: 30080, hostPort: 8088, protocol: TCP 
+          +}                                                             
+       71 +  - role: worker                                              
+       72 +  - role: worker                                              
+       73 +```                                                           
+       74 
+       43 -![Figure 4: Resources](screenshots/04-get-all.png)            
+       44 -*Figure 5: Deployment 3/3, Pods spread over `kubepulse-worker`
+          - and `kubepulse-worker2`, ClusterIP and NodePort Services, HPA
+          - 3–8, PDB. (`cpu: <unknown>` in this early capture is metrics-
+          -server's first scrape; see Figure 10 for live values.)*       
+       75 +The same `Dockerfile` produces all three releases through buil
+          +d arguments, so v1, v2 and the broken v3 differ only by config
+          +uration:                                                      
+       76 +```bash                                                       
+       77 +docker build --build-arg APP_VERSION=1.0.0 -t kubepulse:1.0.0 
+          +.                                                             
+       78 +docker build --build-arg APP_VERSION=2.0.0 -t kubepulse:2.0.0 
+          +.                                                             
+       79 +docker build --build-arg APP_VERSION=3.0.0 --build-arg BROKEN=
+          +true -t kubepulse:3.0.0-broken .                              
+       80 +kind load docker-image kubepulse:1.0.0 kubepulse:2.0.0 kubepul
+          +se:3.0.0-broken --name kubepulse                              
+       81 +```                                                           
+       82 +`kind load` is required because kind nodes are containers with
+          + their own image store and cannot see the host's images; the D
+          +eployment therefore uses `imagePullPolicy: IfNotPresent`.     
+       83 
+       46 -### Key Deployment settings (`k8s/base/20-deployment.yaml`)   
+       84 +---                                                           
+       85 
+       48 -| Setting | Value | Reason |                                  
+       49 -| :--- | :--- | :--- |                                        
+       50 -| Strategy | `RollingUpdate`, `maxSurge: 1`, `maxUnavailable: 
+          -0` | New Pod Ready before an old one is removed |             
+       51 -| `minReadySeconds` / `progressDeadlineSeconds` | 5 / 60 | Avo
+          -id counting flapping Pods; flag stalled rollouts |            
+       52 -| Probes | startup, readiness (`/readyz`), liveness (`/healthz
+          -`) | Traffic gating vs restart semantics |                    
+       53 -| `preStop` | `sleep 5` | Let endpoint removal propagate befor
+          -e SIGTERM |                                                   
+       54 -| Resources | request 100m/64Mi, limit 250m/128Mi | HPA utilis
+          -ation is relative to the CPU request |                        
+       55 -| Placement | topology spread on hostname, PDB `maxUnavailable
+          -: 1` | Survive node loss/drains |                             
+       56 -| Security | non-root UID 1000, read-only rootfs, drop ALL, se
+          -ccomp RuntimeDefault | Least privilege |                      
+       57 -| Config | ConfigMap + Secret via `envFrom`; Downward API for 
+          -Pod/node name | Config outside the image |                    
+       58 -| `replicas` | omitted | HPA owns the count; `apply` must not 
+          -reset it |                                                    
+       86 +> ### 📸 Screenshot 2 Instruction: Three-Node Cluster         
+       87 +> * **What to capture:** Terminal output of `kubectl get nodes
+          + -o wide`.                                                    
+       88 +> * **How to take it:** After `npm run cluster:create`, run th
+          +e command and capture with `Win + Shift + S`.                 
+       89 +> * **What evaluators check:** Three nodes `Ready` (one `contr
+          +ol-plane`, two workers) and version `v1.32.2`.                
+       90 +> * **File destination:** `docs/screenshots/01-cluster-nodes.p
+          +ng`.                                                          
+       91 
+       60 -![Figure 5: Describe](screenshots/05-describe-deployment.png) 
+          -                                                              
+       61 -*Figure 6: `kubectl describe deployment` excerpt: strategy `0 
+          -max unavailable, 1 max surge`, probes, resources.*            
+       92 +![Screenshot 1: Cluster Nodes](screenshots/01-cluster-nodes.pn
+          +g)                                                            
+       93 +*Figure 2: Three-node cluster, Kubernetes v1.32.2. metrics-ser
+          +ver is installed for the autoscaler.*                         
+       94 
+       95  ---
+       96 
+       65 -## 3. Services                                                
+       97 +> ### 📸 Screenshot 3 Instruction: Release Images             
+       98 +> * **What to capture:** Terminal output of `docker images kub
+          +epulse`.                                                      
+       99 +> * **How to take it:** After `npm run image:build`, run the c
+          +ommand.                                                       
+      100 +> * **What evaluators check:** Three tags (`1.0.0`, `2.0.0`, `
+          +3.0.0-broken`) built from one Dockerfile.                     
+      101 +> * **File destination:** `docs/screenshots/02-docker-images.p
+          +ng`.                                                          
+      102 
+       67 -`kubepulse` (ClusterIP, DNS `kubepulse.kubepulse.svc.cluster.l
+          -ocal`) is used inside the cluster; `kubepulse-external` (NodeP
+          -ort 30080) is reachable from the host on `localhost:8088`.    
+      103 +![Screenshot 2: Docker Images](screenshots/02-docker-images.pn
+          +g)                                                            
+      104 +*Figure 3: Three release images built from a single parameteri
+          +sed Dockerfile.*                                              
+      105 
+       69 -![Figure 6: Service load balancing](screenshots/06-service-loa
+          -d-balancing.png)                                              
+       70 -*Figure 7: Endpoints list the three Pod IPs; twelve consecutiv
+          -e requests are answered by different Pods on both workers.*   
+      106 +---                                                           
+      107 
+       72 -**Finding:** the first version of the validation showed all re
+          -quests going to a single Pod. `kube-proxy` balances per TCP *c
+          -onnection*, and an HTTP keep-alive client reuses one connectio
+          -n. The API now answers with `Connection: close`, so each reque
+          -st is balanced. For gRPC/long-lived clients, client-side balan
+          -cing or a mesh is needed.                                     
+      108 +## 3. Deployment Architecture                                 
+      109 
+       74 -![Figure 7: validate-deployment](screenshots/07-validate-deplo
+          -yment.png)                                                    
+       75 -*Figure 8: `validate:deploy` — 9/9 checks pass (availability, 
+          -strategy, node spread, probes, hardening, endpoints, in-cluste
+          -r DNS, NodePort balancing, config injection).*                
+      110 +### The Baseline Anti-Pattern (`k8s/unoptimized/naive-deployme
+          +nt.yaml`)                                                     
+      111 +To give empirical proof of the improvement, we authored the ma
+          +nifest that most first attempts produce:                      
+      112 +```yaml                                                       
+      113 +apiVersion: apps/v1                                           
+      114 +kind: Deployment                                              
+      115 +metadata: { name: kubepulse, namespace: kubepulse }           
+      116 +spec:                                                         
+      117 +  replicas: 3                                                 
+      118 +  strategy: { type: Recreate }                                
+      119 +  selector: { matchLabels: { app: kubepulse } }               
+      120 +  template:                                                   
+      121 +    metadata: { labels: { app: kubepulse } }                  
+      122 +    spec:                                                     
+      123 +      containers:                                             
+      124 +        - name: app                                           
+      125 +          image: kubepulse:1.0.0                              
+      126 +          ports: [{ name: http, containerPort: 3000 }]        
+      127 +```                                                           
+      128 +#### Flaws in this baseline                                   
+      129 +1. **`Recreate` strategy:** every Pod is killed before a repla
+          +cement starts — a guaranteed outage on each release.          
+      130 +2. **No readiness probe:** the Service routes traffic the mome
+          +nt the container starts.                                      
+      131 +3. **No liveness/startup probes:** a hung process is never res
+          +tarted.                                                       
+      132 +4. **No resource requests:** the scheduler is blind and the HP
+          +A cannot compute utilisation.                                 
+      133 +5. **No security context, no graceful stop, config baked into 
+          +the image.**                                                  
+      134 
+      135 +### The Production Deployment (`k8s/base/20-deployment.yaml`) 
+      136 +```yaml                                                       
+      137 +spec:                                                         
+      138 +  # replicas omitted on purpose: the HPA owns the count       
+      139 +  revisionHistoryLimit: 5                                     
+      140 +  minReadySeconds: 5                                          
+      141 +  progressDeadlineSeconds: 60                                 
+      142 +  strategy:                                                   
+      143 +    type: RollingUpdate                                       
+      144 +    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }         
+      145 +  template:                                                   
+      146 +    spec:                                                     
+      147 +      terminationGracePeriodSeconds: 30                       
+      148 +      securityContext:                                        
+      149 +        { runAsNonRoot: true, runAsUser: 1000, runAsGroup: 100
+          +0, seccompProfile: { type: RuntimeDefault } }                 
+      150 +      topologySpreadConstraints:                              
+      151 +        - { maxSkew: 1, topologyKey: kubernetes.io/hostname, w
+          +henUnsatisfiable: ScheduleAnyway,                             
+      152 +            labelSelector: { matchLabels: { app: kubepulse } }
+          + }                                                            
+      153 +      containers:                                             
+      154 +        - name: app                                           
+      155 +          image: kubepulse:1.0.0                              
+      156 +          envFrom: [{ configMapRef: { name: kubepulse-config }
+          + }, { secretRef: { name: kubepulse-secret } }]                
+      157 +          env: # Downward API: Pod name, namespace, IP, node  
+      158 +          resources: { requests: { cpu: 100m, memory: 64Mi }, 
+          +limits: { cpu: 250m, memory: 128Mi } }                        
+      159 +          securityContext: { allowPrivilegeEscalation: false, 
+          +readOnlyRootFilesystem: true, capabilities: { drop: ["ALL"] } 
+          +}                                                             
+      160 +          startupProbe:   { httpGet: { path: /healthz, port: h
+          +ttp }, periodSeconds: 1, failureThreshold: 30 }               
+      161 +          readinessProbe: { httpGet: { path: /readyz,  port: h
+          +ttp }, periodSeconds: 3, failureThreshold: 1 }                
+      162 +          livenessProbe:  { httpGet: { path: /healthz, port: h
+          +ttp }, periodSeconds: 10, failureThreshold: 3 }               
+      163 +          lifecycle: { preStop: { exec: { command: ["sleep", "
+          +5"] } } }                                                     
+      164 +```                                                           
+      165 +                                                              
+      166 +### Production vs Baseline                                    
+      167 +                                                              
+      168 +| Concern | Baseline | Production | Why it matters |          
+      169 +| :--- | :--- | :--- | :--- |                                 
+      170 +| Update strategy | `Recreate` | `RollingUpdate`, surge 1, una
+          +vailable 0 | New Pod Ready before an old one is removed |     
+      171 +| Traffic gating | none | readiness probe + `minReadySeconds` 
+          +| Only working Pods receive requests |                        
+      172 +| Hung process | never restarted | liveness + startup probes |
+          + Self-recovery without loosening liveness |                   
+      173 +| Graceful stop | abrupt | `preStop sleep` + app drains on SIG
+          +TERM | Endpoint removal propagates first |                    
+      174 +| Capacity | fixed | requests/limits + HPA 3–8 | Elastic; HPA 
+          +needs requests |                                              
+      175 +| Placement | default | topology spread + PDB | Node loss/drai
+          +n stays within budget |                                       
+      176 +| Security | defaults | non-root, read-only rootfs, drop ALL, 
+          +seccomp | Least privilege |                                   
+      177 +| Configuration | baked in | ConfigMap, Secret, Downward API |
+          + Config separate from image |                                 
+      178 +                                                              
+      179  ---
+      180 
+       79 -## 4. Self-Healing and Probes                                 
+      181 +> ### 📸 Screenshot 4 Instruction: Declarative Deployment     
+      182 +> * **What to capture:** Terminal output of `kubectl apply -k 
+          +k8s/base`.                                                    
+      183 +> * **How to take it:** Run the command on a clean namespace a
+          +nd capture the object-creation lines.                         
+      184 +> * **What evaluators check:** Namespace, ConfigMap, Secret, t
+          +wo Services, Deployment, PodDisruptionBudget and HorizontalPod
+          +Autoscaler all created.                                       
+      185 +> * **File destination:** `docs/screenshots/03-kubectl-apply.p
+          +ng`.                                                          
+      186 
+       81 -`validate:resilience` (4/4 pass) exercises each probe's semant
+          -ics on a live Pod:                                            
+      187 +![Screenshot 3: kubectl apply](screenshots/03-kubectl-apply.pn
+          +g)                                                            
+      188 +*Figure 4: One declarative command creates all objects.*      
+      189 
+       83 -| Action | Result observed |                                  
+       84 -| :--- | :--- |                                               
+       85 -| Delete a Pod | ReplicaSet created a replacement; back to 3/3
+          - Ready |                                                      
+       86 -| Force readiness to fail | Pod IP left Service endpoints, **r
+          -estart count unchanged**, rejoined when ready |               
+       87 -| Crash the container | kubelet restarted it: `restartCount 0 
+          --> 1`, Pod Ready again |                                      
+       88 -| PDB | `maxUnavailable: 1`, 1 disruption allowed |           
+      190 +---                                                           
+      191 
+       90 -![Figure 8: validate-resilience](screenshots/08-validate-resil
+          -ience.png)                                                    
+       91 -*Figure 9: Self-healing suite output.*                        
+      192 +> ### 📸 Screenshot 5 Instruction: Workload Overview          
+      193 +> * **What to capture:** `kubectl -n kubepulse get deploy,rs,p
+          +ods,svc,hpa,pdb -o wide`.                                     
+      194 +> * **How to take it:** Run once all Pods are Running.        
+      195 +> * **What evaluators check:** 3/3 Pods on two different worke
+          +r nodes, ClusterIP and NodePort `80:30080/TCP` Services, HPA 3
+          +–8, PDB with 1 allowed disruption.                            
+      196 +> * **File destination:** `docs/screenshots/04-get-all.png`.  
+      197 
+      198 +![Screenshot 4: Workload overview](screenshots/04-get-all.png)
+          +                                                              
+      199 +*Figure 5: Deployment, ReplicaSet, Pods spread across `kubepul
+          +se-worker` and `kubepulse-worker2`, both Services, HPA and PDB
+          +. (`cpu: <unknown>` is metrics-server's first scrape; live val
+          +ues appear in Figure 12.)*                                    
+      200 +                                                              
+      201  ---
+      202 
+       95 -## 5. Rolling Updates, Failed Release, Rollback               
+      203 +> ### 📸 Screenshot 6 Instruction: Deployment Specification   
+      204 +> * **What to capture:** `kubectl -n kubepulse describe deploy
+          + kubepulse` (top of output).                                  
+      205 +> * **What evaluators check:** `RollingUpdateStrategy: 0 max u
+          +navailable, 1 max surge`, `MinReadySeconds: 5`, the three prob
+          +es, requests/limits, ConfigMap and Secret environment sources.
+      206 +> * **File destination:** `docs/screenshots/05-describe-deploy
+          +ment.png`.                                                    
+      207 
+       97 -`validate:rollout` (5/5 pass) runs under continuous traffic (a
+          - request every ~40 ms through the NodePort):                  
+      208 +![Screenshot 5: Describe deployment](screenshots/05-describe-d
+          +eployment.png)                                                
+      209 +*Figure 6: The cluster confirms the strategy, probes and resou
+          +rce settings from the manifest.*                              
+      210 
+       99 -| Step | Result |                                             
+      211 +---                                                           
+      212 +                                                              
+      213 +## 4. Service Architecture & Load Balancing Validation        
+      214 +                                                              
+      215 +```                                                           
+      216 +        [ Browser / curl ]                                    
+      217 +               │  http://localhost:8088                       
+      218 +               ▼                                              
+      219 +   ┌──────────────────────────────────────────────────────────
+          +────┐                                                         
+      220 +   │ kind node (control-plane) : NodePort 30080               
+          +    │                                                         
+      221 +   │      Service  kubepulse-external  (NodePort)             
+          +    │                                                         
+      222 +   └───────────────────────────┬──────────────────────────────
+          +────┘                                                         
+      223 +                               │ kube-proxy (L4, per-connectio
+          +n)                                                            
+      224 +        Service  kubepulse (ClusterIP 80 → targetPort "http") 
+      225 +        DNS: kubepulse.kubepulse.svc.cluster.local            
+      226 +        ┌──────────────┬───────┴──────┬──────────────┐        
+      227 +        ▼              ▼              ▼                       
+      228 +   Pod A (worker)  Pod B (worker2) Pod C (worker)    ◄─ HPA sc
+          +ales 3…8                                                      
+      229 +        ▲              ▲              ▲                       
+      230 +        └── Deployment → ReplicaSet (one per release) ── PDB: 
+          +maxUnavailable 1                                              
+      231 +```                                                           
+      232 +                                                              
+      233 +- **ClusterIP `kubepulse`:** stable virtual IP and DNS name fo
+          +r in-cluster clients; Pods are selected by label `app=kubepuls
+          +e`.                                                           
+      234 +- **NodePort `kubepulse-external`:** opens port `30080` on eve
+          +ry node, published to the host as `8088`.                     
+      235 +- Both Services use a **named** `targetPort: http`, so Pod por
+          +t numbers can change without touching the Service.            
+      236 +                                                              
+      237 +### Finding: Services balance connections, not requests       
+      238 +The first validation run sent 60 sequential requests through t
+          +he NodePort and **all 60 reached one Pod**. `kube-proxy` is a 
+          +Layer-4 balancer: it chooses a backend per TCP connection, and
+          + an HTTP keep-alive client reuses one connection. The API now 
+          +replies `Connection: close`, so every request is re-balanced (
+          +and re-resolved during rollouts). Long-lived or gRPC clients n
+          +eed client-side balancing, a headless Service or a service mes
+          +h.                                                            
+      239 +                                                              
+      240 +---                                                           
+      241 +                                                              
+      242 +> ### 📸 Screenshot 7 Instruction: Endpoints & Balancing      
+      243 +> * **What to capture:** `kubectl -n kubepulse get svc,endpoin
+          +ts` followed by `node scripts/probe.js 12`.                   
+      244 +> * **What evaluators check:** Endpoints list three Pod IPs; t
+          +welve consecutive requests are answered by different Pods on b
+          +oth workers.                                                  
+      245 +> * **File destination:** `docs/screenshots/06-service-load-ba
+          +lancing.png`.                                                 
+      246 +                                                              
+      247 +![Screenshot 6: Service load balancing](screenshots/06-service
+          +-load-balancing.png)                                          
+      248 +*Figure 7: Requests through the Service are distributed across
+          + three Pods on two nodes.*                                    
+      249 +                                                              
+      250 +---                                                           
+      251 +                                                              
+      252 +## 5. Automated Validation Suites                             
+      253 +                                                              
+      254 +Each suite is a Node.js script that queries the live cluster a
+          +nd exits non-zero on failure (used unchanged by CI).          
+      255 +                                                              
+      256 +| Suite | Command | Checks | Result |                         
+      257 +| :--- | :--- | :---: | :---: |                               
+      258 +| Deployment & Service | `npm run validate:deploy` | 9 | 9 PAS
+          +S |                                                           
+      259 +| Self-healing | `npm run validate:resilience` | 4 | 4 PASS | 
+      260 +| Rolling update | `npm run validate:rollout` | 5 | 5 PASS |  
+      261 +| Scaling | `npm run validate:scaling` | 6 | 6 PASS |         
+      262 +| Baseline experiment | `npm run compare:naive` | 2 | 2 PASS |
+      263 +                                                              
+      264 +### 5.1 Deployment & Service (`validate:deploy`)              
+      265 +Verifies: availability (3/3), `maxUnavailable=0`, Pods on more
+          + than one node, all three probes present, hardening (non-root 
+          +UID 1000, read-only rootfs, privilege escalation off), Service
+          + endpoints equal Ready Pods, in-cluster DNS resolution, NodePo
+          +rt load balancing across ≥2 Pods, and ConfigMap/Secret injecti
+          +on with the secret value never exposed.                       
+      266 +                                                              
+      267 +> ### 📸 Screenshot 8 Instruction: Deployment Suite           
+      268 +> * **What to capture:** `node scripts/validate-deployment.js`
+          +.                                                             
+      269 +> * **What evaluators check:** `9 PASSED, 0 FAILED`.          
+      270 +> * **File destination:** `docs/screenshots/07-validate-deploy
+          +ment.png`.                                                    
+      271 +                                                              
+      272 +![Screenshot 7: validate-deployment](screenshots/07-validate-d
+          +eployment.png)                                                
+      273 +*Figure 8: `validate:deploy` — 9 PASSED, 0 FAILED.*           
+      274 +                                                              
+      275 +### 5.2 Self-Healing & Probe Semantics (`validate:resilience`)
+      276 +                                                              
+      277 +| Action on a live Pod | Observed behaviour |                 
+      278  | :--- | :--- |
+      101 -| v1 → v2 rolling update | **675 requests, 0 failed**; served 
+          -395 × v1.0.0 and 280 × v2.0.0 (both versions live during the r
+          -oll) |                                                        
+      102 -| v3 (never Ready) | Rollout **stalled** (`available=3, unavai
+          -lable=1`); **796 requests, 0 failed, all served by v2.0.0**; n
+          -one reached v3 |                                              
+      103 -| `kubectl rollout undo` | v2 restored under traffic, 0 failed
+          - requests |                                                   
+      104 -| `kubectl rollout history` | Revisions with `kubernetes.io/ch
+          -ange-cause` |                                                 
+      279 +| Delete a Pod | ReplicaSet created a replacement; Deployment 
+          +back to 3/3 Ready |                                           
+      280 +| Force readiness to fail | Pod IP left the Service endpoints;
+          + **`restartCount` unchanged**; rejoined when ready |          
+      281 +| Crash the container | kubelet restarted it: `restartCount 0 
+          +→ 1`, Pod Ready again |                                       
+      282 +| PodDisruptionBudget | `maxUnavailable: 1`, 1 disruption allo
+          +wed |                                                         
+      283 
+      106 -![Figure 9: validate-rollout](screenshots/09-validate-rollout.
+          -png)                                                          
+      107 -*Figure 10: Zero-downtime update, contained bad release, rollb
+          -ack.*                                                         
+      284 +This demonstrates the key distinction: **readiness controls tr
+          +affic, liveness controls restarts.**                          
+      285 
+      109 -### Measured baseline: naive vs production                    
+      286 +> ### 📸 Screenshot 9 Instruction: Self-Healing Suite         
+      287 +> * **What to capture:** `node scripts/validate-resilience.js`
+          +.                                                             
+      288 +> * **What evaluators check:** `4 PASSED, 0 FAILED`; the readi
+          +ness check states restarts unchanged; the crash check shows `r
+          +estartCount 0 -> 1`.                                          
+      289 +> * **File destination:** `docs/screenshots/08-validate-resili
+          +ence.png`.                                                    
+      290 
+      111 -`compare:naive` repeats the same v1 → v2 update with `k8s/unop
+          -timized/naive-deployment.yaml` (`Recreate`, no probes) and wit
+          -h the production manifest, under the same traffic:            
+      291 +![Screenshot 8: validate-resilience](screenshots/08-validate-r
+          +esilience.png)                                                
+      292 +*Figure 9: Pod replacement, readiness gating without restart, 
+          +crash restart.*                                               
+      293 
+      113 -| Manifest | Requests during update | Failed |                
+      294 +---                                                           
+      295 +                                                              
+      296 +## 6. Rolling Updates, Failed Release & Rollback              
+      297 +                                                              
+      298 +### Methodology                                               
+      299 +A background traffic generator sends one request every 40 ms (
+          +plus request time) to `http://localhost:8088/api/info` using i
+          +ndependent connections, with a 3-second timeout, while the rel
+          +ease changes. A request counts as *failed* on any network erro
+          +r, timeout or non-2xx status. Versions seen are tallied from t
+          +he response body. All operations are performed with real `kube
+          +ctl` commands.                                                
+      300 +                                                              
+      301 +### Results (`validate:rollout`)                              
+      302 +                                                              
+      303 +| Step | Requests | Failed | Observation |                    
+      304 +| :--- | :---: | :---: | :--- |                               
+      305 +| v1 → v2 rolling update | 675 | **0** | 395 served by v1.0.0 
+          +and 280 by v2.0.0 — both versions live during the roll |      
+      306 +| Bad release `3.0.0-broken` | 796 | **0** | Rollout **stalled
+          +** (`available=3, unavailable=1`); every request served by v2.
+          +0.0; none reached v3 |                                        
+      307 +| `kubectl rollout undo` | 8 | **0** | v2 restored under traff
+          +ic |                                                          
+      308 +| `kubectl rollout history` | — | — | Revisions listed with `k
+          +ubernetes.io/change-cause` |                                  
+      309 +                                                              
+      310 +Why the bad release is harmless: `maxUnavailable: 0` forbids r
+          +emoving an old Pod until its replacement is Ready, the broken 
+          +Pod never passes `/readyz`, so capacity never drops; `progress
+          +DeadlineSeconds: 60` marks the rollout failed.                
+      311 +                                                              
+      312 +> ### 📸 Screenshot 10 Instruction: Rolling Update Suite      
+      313 +> * **What to capture:** `node scripts/validate-rollout.js`, t
+          +hen `kubectl -n kubepulse get rs`.                            
+      314 +> * **What evaluators check:** `5 PASSED, 0 FAILED`; `0 failed
+          +` in the update, stalled-release and rollback lines.          
+      315 +> * **File destination:** `docs/screenshots/09-validate-rollou
+          +t.png`.                                                       
+      316 +                                                              
+      317 +![Screenshot 9: validate-rollout](screenshots/09-validate-roll
+          +out.png)                                                      
+      318 +*Figure 10: Zero-downtime update, contained bad release, insta
+          +nt rollback.*                                                 
+      319 +                                                              
+      320 +### Measured Baseline: Naive vs Production                    
+      321 +The identical v1 → v2 update was run against both manifests un
+          +der the same traffic (`npm run compare:naive`):               
+      322 +                                                              
+      323 +| Manifest | Requests during update | Failed requests |       
+      324  | :--- | :---: | :---: |
+      115 -| Naive (`Recreate`, no probes) | 29 | **7** (connection failu
+          -res and timeouts) |                                           
+      325 +| Naive (`Recreate`, no probes) | 29 | **7** (connection failu
+          +res, timeouts) |                                              
+      326  | Production (`RollingUpdate 1/0`, readiness, preStop) | 910 |
+            **0** |
+      327 
+      118 -The naive run also issued far fewer requests because each fail
+          -ed request waits for its timeout while the Deployment has no P
+          -ods.                                                          
+      328 +The naive run completed far fewer requests because each failed
+          + request waits for its timeout while the Deployment has no Pod
+          +s.                                                            
+      329 
+      120 -![Figure 11: naive vs production](screenshots/11-naive-vs-prod
+          -uction.png)                                                   
+      121 -*Figure 11: Measured downtime of the baseline against the prod
+          -uction manifest.*                                             
+      330 +> ### 📸 Screenshot 11 Instruction: Naive vs Production       
+      331 +> * **What to capture:** `node scripts/compare-naive.js`.     
+      332 +> * **What evaluators check:** Naive line reports FAILED reque
+          +sts; production line reports `0 FAILED`.                      
+      333 +> * **File destination:** `docs/screenshots/11-naive-vs-produc
+          +tion.png`.                                                    
+      334 
+      335 +![Screenshot 11: naive vs production](screenshots/11-naive-vs-
+          +production.png)                                               
+      336 +*Figure 11: Measured downtime — naive manifest vs production m
+          +anifest.*                                                     
+      337 +                                                              
+      338  ---
+      339 
+      125 -## 6. Scaling                                                 
+      340 +## 7. Scaling: Manual and Horizontal Pod Autoscaler           
+      341 
+      127 -`validate:scaling` (6/6 pass):                                
+      342 +The HPA (`autoscaling/v2`) targets 50 % of the **CPU request**
+          + (100 m), between 3 and 8 replicas:                           
+      343 +```yaml                                                       
+      344 +behavior:                                                     
+      345 +  scaleUp:   { stabilizationWindowSeconds: 0,  policies: [{ ty
+          +pe: Pods, value: 2, periodSeconds: 15 }] }                    
+      346 +  scaleDown: { stabilizationWindowSeconds: 60, policies: [{ ty
+          +pe: Pods, value: 1, periodSeconds: 30 }] }                    
+      347 +```                                                           
+      348 +The default scale-down window is 300 s; it was shortened to 60
+          + s so scale-in can be observed in a lab session.              
+      349 
+      129 -| Step | Result |                                             
+      350 +### Results (`validate:scaling`)                              
+      351 +                                                              
+      352 +| Step | Observation |                                        
+      353  | :--- | :--- |
+      131 -| metrics-server | `kubectl top pods` returns Pod CPU/memory |
+      132 -| HPA live utilisation | `cpu: 9%/50%`, 3 replicas when idle |
+      133 -| Manual `kubectl scale --replicas=5` | 5 Ready replicas |    
+      134 -| HPA override | HPA scaled 5 → 3 (min) once idle (60 s window
+          -, −1 Pod / 30 s) |                                            
+      135 -| CPU load via `/api/load` | HPA scaled out 3 → 4+ with CPU sa
+          -mples above 200 % of the request (230 % at last sample) |     
+      136 -| Load removed | HPA scaled in (6 → 5 observed, −1 Pod / 30 s)
+          - |                                                            
+      354 +| metrics-server | `kubectl top pods` returns CPU/memory per P
+          +od |                                                          
+      355 +| Idle utilisation | `cpu: 9%/50%`, 3 replicas |              
+      356 +| `kubectl scale --replicas=5` | 5 Ready replicas |           
+      357 +| HPA reclaims control | scaled 5 → 3 once idle (the manifest 
+          +omits `replicas` so `apply` cannot fight the HPA) |           
+      358 +| CPU load through `/api/load` | scaled out 3 → 4+ replicas; l
+          +ast CPU sample **230 %** of the request |                     
+      359 +| Load removed | scaled in (6 → 5 observed, −1 Pod per 30 s) |
+      360 
+      138 -![Figure 10: validate-scaling](screenshots/10-validate-scaling
+          -.png)                                                         
+      139 -*Figure 12: Manual scaling and HPA scale-out/scale-in. The tra
+          -iling `kubectl get hpa` shows the autoscaler still stepping do
+          -wn.*                                                          
+      361 +> ### 📸 Screenshot 12 Instruction: Scaling Suite             
+      362 +> * **What to capture:** `node scripts/validate-scaling.js`, t
+          +hen `kubectl -n kubepulse get hpa`.                           
+      363 +> * **What evaluators check:** `6 PASSED, 0 FAILED`; CPU above
+          + the 50 % target during load; replicas increasing then decreas
+          +ing.                                                          
+      364 +> * **File destination:** `docs/screenshots/10-validate-scalin
+          +g.png`.                                                       
+      365 
+      366 +![Screenshot 10: validate-scaling](screenshots/10-validate-sca
+          +ling.png)                                                     
+      367 +*Figure 12: Manual scaling, HPA scale-out under load and scale
+          +-in afterwards.*                                              
+      368 +                                                              
+      369  ---
+      370 
+      143 -## 7. Beyond the Baseline — Eight Self-Learning Initiatives   
+      371 +## 8. Beyond the Baseline: Eight Self-Learning Initiatives    
+      372 
+      145 -Details in [`SELF_LEARNING.md`](SELF_LEARNING.md).            
+      373 +Full write-up in [`SELF_LEARNING.md`](SELF_LEARNING.md).      
+      374 
+      147 -1. **Measured rolling update vs naive baseline** (0 vs 7 faile
+          -d requests).                                                  
+      148 -2. **Failed-release protection and rollback** with revision hi
+          -story.                                                        
+      149 -3. **Three-probe health model proven by chaos tests.**        
+      150 -4. **HPA with tuned behaviour**; `replicas` omitted so apply d
+          -oes not fight the autoscaler.                                 
+      151 -5. **Topology spread + PodDisruptionBudget.**                 
+      152 -6. **Pod hardening** (numeric non-root UID, read-only rootfs, 
+          -drop ALL, seccomp).                                           
+      153 -7. **ConfigMap / Secret / Downward API.**                     
+      154 -8. **Automation:** four validation suites (24 checks), baselin
+          -e experiment, and CI (unit tests → `kubeconform` → kind end-to
+          --end).                                                        
+      375 +### 1. Measured Rolling Update vs Naive Baseline              
+      376 +`RollingUpdate` with `maxSurge 1 / maxUnavailable 0`, `minRead
+          +ySeconds`, readiness and `preStop` — proven to drop **0** requ
+          +ests against **7** for the naive manifest under identical traf
+          +fic.                                                          
+      377 
+      156 -## 8. Problems Encountered                                    
+      378 +### 2. Failed-Release Protection & Rollback                   
+      379 +A deliberately broken image is stalled by the readiness gate w
+          +hile the previous release keeps serving; `kubectl rollout undo
+          +` and `change-cause` revision history restore and document sta
+          +te.                                                           
+      380 
+      158 -| Problem | Cause | Resolution |                              
+      381 +### 3. Three-Probe Health Model Verified with Chaos Tests     
+      382 +Startup, readiness and liveness probes with chaos endpoints pr
+          +ove Pod removal-without-restart versus container restart.     
+      383 +                                                              
+      384 +### 4. HPA Autoscaling with Tuned Behaviour                   
+      385 +metrics-server, CPU target against requests, custom scale-up/d
+          +own policies, and a Deployment that omits `replicas` so the au
+          +toscaler is the single owner.                                 
+      386 +                                                              
+      387 +### 5. Topology Spread & PodDisruptionBudget                  
+      388 +Replicas are spread across worker nodes; voluntary disruptions
+          + are limited to one Pod at a time.                            
+      389 +                                                              
+      390 +### 6. Container & Pod Hardening                              
+      391 +Numeric non-root UID (required for `runAsNonRoot` verification
+          +), read-only root filesystem with an in-memory `/tmp`, all cap
+          +abilities dropped, seccomp `RuntimeDefault`, secret never echo
+          +ed by the API.                                                
+      392 +                                                              
+      393 +### 7. Externalised Configuration & Downward API              
+      394 +ConfigMap and Secret via `envFrom`; Pod name, IP, namespace an
+          +d node injected through the Downward API so responses identify
+          + their origin.                                                
+      395 +                                                              
+      396 +### 8. Automated Validation & CI                              
+      397 +Four suites (24 checks) plus `.github/workflows/k8s-ci.yml`: u
+          +nit tests → `kubeconform -strict` schema check → real kind clu
+          +ster running the deploy, resilience and rollout suites.       
+      398 +                                                              
+      399 +---                                                           
+      400 +                                                              
+      401 +## 9. Problems Encountered & Resolutions                      
+      402 +                                                              
+      403 +| Problem | Root cause | Resolution |                         
+      404  | :--- | :--- | :--- |
+      160 -| All requests hit one Pod | kube-proxy balances per TCP conne
+          -ction | `Connection: close` in the API |                      
+      161 -| Rollout test reported only ~50 requests | Synchronous `kubec
+          -tl` call froze Node's event loop and the traffic generator | A
+          -sync child process for long calls |                           
+      162 -| `kind create cluster` failed: `port is already allocated` | 
+          -Another container already bound host port 8080 | Cluster publi
+          -shes on 8088 |                                                
+      163 -| Naive baseline got no traffic | Service `targetPort: http` i
+          -s a *named* port; the Pod's port was unnamed → zero endpoints 
+          -| Named the port in the baseline so only strategy/probes diffe
+          -r |                                                           
+      164 -| Wrong revision labels in rollout history | Annotating after 
+          -`set image` races the controller | One atomic `kubectl patch`;
+          - annotate after `undo` |                                      
+      405 +| All requests reached one Pod | kube-proxy balances per TCP c
+          +onnection | API replies `Connection: close` |                 
+      406 +| Rollout test counted only ~50 requests | Synchronous `kubect
+          +l` child process froze Node's event loop and the traffic gener
+          +ator | Asynchronous child process for long calls |            
+      407 +| `kind create cluster` failed with `port is already allocated
+          +` | Another container already bound host port 8080 | Cluster p
+          +ublishes on 8088 |                                            
+      408 +| Naive baseline received no traffic | Service `targetPort: ht
+          +tp` is a named port and the baseline's port was unnamed → zero
+          + endpoints | Named the port so only strategy and probes differ
+          + |                                                            
+      409 +| Incorrect revision labels in rollout history | Annotating af
+          +ter `set image` races the controller that stamps the new Repli
+          +caSet | One atomic `kubectl patch` for image + change-cause | 
+      410 +| Intermittent endpoints/Ready mismatch right after a rollout 
+          +| A terminating Pod is briefly still Ready | Ignore Pods with 
+          +a `deletionTimestamp`; poll briefly |                         
+      411 
+      166 -## 9. Key Learnings                                           
+      412 +## 10. Key Learnings & Engineering Reflections                
+      413 
+      168 -1. Zero downtime is a property of strategy **and** probes **an
+          -d** shutdown behaviour together; removing any one drops reques
+          -ts.                                                           
+      169 -2. Readiness controls traffic, liveness controls restarts — th
+          -ey must not be conflated.                                     
+      170 -3. Services balance connections, not requests.                
+      171 -4. The HPA and a fixed `replicas:` field conflict; pick one ow
+          -ner.                                                          
+      172 -5. A validation that can silently measure nothing is worse tha
+          -n none — verify the measurement ran.                          
+      414 +1. **Zero downtime is a combination.** Strategy, probes and sh
+          +utdown behaviour must all be right; removing any one drops req
+          +uests (naive: 7 failed vs production: 0).                     
+      415 +2. **Readiness controls traffic; liveness controls restarts.**
+          + Conflating them causes restart loops or traffic to broken Pod
+          +s.                                                            
+      416 +3. **Services balance connections, not requests.** Keep-alive 
+          +clients stick to one Pod.                                     
+      417 +4. **One owner for replica count.** A fixed `replicas:` field 
+          +fights the HPA.                                               
+      418 +5. **Measure the measurement.** A validation that silently mea
+          +sures nothing (our blocked event loop) is worse than none; eve
+          +ry claim here was checked against the traffic actually sent.  
+      419 
+      174 -## 10. Limitations                                            
+      420 +## 11. Limitations & Threats to Validity                      
+      421 
+      176 -- kind is a local cluster: no cloud LoadBalancer, and `--kubel
+          -et-insecure-tls` is used for metrics-server (lab only).       
+      422 +- kind runs all nodes on one machine, so network failures betw
+          +een nodes and real cloud LoadBalancers are not exercised.     
+      423 +- Request counts depend on machine speed and are not comparabl
+          +e across runs; only the zero/non-zero failure outcome is the c
+          +laim.                                                         
+      424 +- Naive-baseline failures (7) are a single run; the exact coun
+          +t varies with timing, but a `Recreate` outage is deterministic
+          +.                                                             
+      425  - The default kind CNI does not enforce NetworkPolicy, so none
+            is claimed.
+      178 -- The Secret is a demo value in a manifest; real deployments n
+          -eed an external secret store.                                 
+      179 -- The HPA suite takes about 8 minutes and is run locally, not 
+          -in CI.                                                        
+      426 +- The Secret is a demo value stored in a manifest; production 
+          +requires an external secret store and encryption at rest.     
+      427 +- The HPA suite takes about 8 minutes and is run locally rathe
+          +r than on every CI push.                                      
+      428 +                                                              
+      429 +## 12. Reproduction                                           
+      430 +                                                              
+      431 +```powershell                                                 
+      432 +npm run cluster:create && npm run image:build && npm run image
+          +:load                                                         
+      433 +npm run metrics:install && npm run k8s:deploy                 
+      434 +npm test                                                      
+      435 +npm run validate:deploy ; npm run validate:resilience ; npm ru
+          +n validate:rollout ; npm run validate:scaling                 
+      436 +npm run compare:naive                                         
+      437 +```                                                           
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Lab 4's PDF was a formal submission, so I'll keep the screenshot-instruction
+  blocks in the Markdown but leave them out of the PDF. I'll also add README
+  badges as Lab 4 had.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Yes, I should have followed Lab 4's report format, and I now have. The rewrite
+  follows Lab 4's structure and is pushed to the repo.
+
+  What the rewrite adds:
+  - Metadata and background: a header block with the repo link and launch
+    command, an experimental-environment table, and "The Challenge → What We
+    Built" in the background section.
+  - Screenshot instruction blocks: each figure has the same blocks Lab 4 used
+    (what to capture, how, what evaluators check, file destination).
+  - Manifests in the text: the baseline anti-pattern and production manifests
+    are embedded, with a "Flaws in this baseline" list and a comparison table.
+  - Diagram: an ASCII Service/topology diagram.
+  - Results sections: validation results, a rolling-update methodology (how
+    failures were counted), "Problems Encountered", "Key Learnings" and
+    "Limitations & Threats to Validity". It also has the eight self-learning
+    initiatives, which also have a standalone write-up in SELF_LEARNING.md.
+  - Smaller changes: README badges, and Problem / Implemented / Impact headings
+    in the self-learning doc.
+
+  The Markdown report keeps the screenshot-instruction blocks, as Lab 4's did. I
+  left them out of the submission PDF, since they are notes for taking
+  screenshots. The PDF is now 12+ pages and was rebuilt with the GitHub link.
+
+  I haven't opened the rebuilt PDF, since there is no PDF viewer here.
+
+✻ Churned for 3m 5s · done 9:39 AM
+
+❯ open the pdf and check it looks right                                         
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Build a contact sheet so I can see all 16 pages at once.
+
+  Read 2 files, ran 1 shell command (ctrl+o to expand)
+
+● Mostly fine, but I see two problems: the ASCII topology diagram is split
+  across pages 7–8, and the YAML syntax colours are too pale to print well.
+  Fixing both.
+
+  Read 1 file, ran 2 shell commands (ctrl+o to expand)
+
+● Code blocks are now readable and stay on one page. The ASCII diagram is still
+  mangled, because the box-drawing characters fall back to a different font.
+  I'll redraw it with plain ASCII.
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+
+● Diagram now renders cleanly. Pushing the final version.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● I opened the PDF and checked all 16 pages. It looks right now, after fixing
+  two problems.
+
+  Fixed:
+  - Diagram: the Service topology diagram was garbled and split across pages
+    because the box-drawing characters rendered badly. I redrew it in plain
+    ASCII and it now renders cleanly.
+  - Code blocks: the YAML colours were too pale to read on paper. They are now
+    plain monochrome on a light grey background and no longer split across
+    pages.
+
+  Checked and fine:
+  - All 12 figures are present, in order, with captions, and the terminal
+    screenshots are legible.
+  - The tables, the header with the GitHub link, and the Problems / Key
+    Learnings / Limitations sections render correctly.
+  - The screenshot-instruction blocks are not in the PDF.
+
+  Remaining: some pages end with white space where a screenshot moved to the
+  next page, and the last page is short. I left both.
+
+  The final PDF is docs/2547105_Lab5.pdf, pushed to the repo.
+
+✻ Baked for 1m 23s · done 9:42 AM
+
+❯ shutdown all that's not required now                                          
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Shut down:
+  - The kind cluster kubepulse is deleted, with its 3 node containers and the
+    kubectl context.
+  - The three kubepulse images are removed.
+  - Docker Desktop is stopped, which puts it back to how it was when we started.
+
+  Stopping Docker also stopped the unrelated containers that were running on it:
+  the student-compose-* pair and the mesh-* stack. Nothing was deleted, and
+  they will start again the next time you open Docker Desktop.
+
+  The repo, report and PDF are unaffected.
+✻ Crunched for 1m 52s · done 9:46 AM
