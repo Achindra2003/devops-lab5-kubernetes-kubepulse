@@ -213,21 +213,24 @@ spec:
 ## 4. Service Architecture & Load Balancing Validation
 
 ```
-        [ Browser / curl ]
-               │  http://localhost:8088
-               ▼
-   ┌──────────────────────────────────────────────────────────────┐
-   │ kind node (control-plane) : NodePort 30080                   │
-   │      Service  kubepulse-external  (NodePort)                 │
-   └───────────────────────────┬──────────────────────────────────┘
-                               │ kube-proxy (L4, per-connection)
-        Service  kubepulse (ClusterIP 80 → targetPort "http")
-        DNS: kubepulse.kubepulse.svc.cluster.local
-        ┌──────────────┬───────┴──────┬──────────────┐
-        ▼              ▼              ▼
-   Pod A (worker)  Pod B (worker2) Pod C (worker)    ◄─ HPA scales 3…8
-        ▲              ▲              ▲
-        └── Deployment → ReplicaSet (one per release) ── PDB: maxUnavailable 1
+  [ Browser / curl ]
+         |  http://localhost:8088
+         v
+  +-------------------------------------------------------+
+  | kind node: NodePort 30080                             |
+  | Service kubepulse-external (NodePort)                 |
+  +---------------------------+---------------------------+
+                              | kube-proxy (L4, per TCP connection)
+                              v
+  Service kubepulse (ClusterIP :80 -> targetPort "http")
+  DNS: kubepulse.kubepulse.svc.cluster.local
+          |                 |                 |
+          v                 v                 v
+    Pod A (worker)   Pod B (worker2)   Pod C (worker)   <- HPA scales 3..8
+          ^                 ^                 ^
+          +-----------------+-----------------+
+          Deployment -> ReplicaSet (one per release)
+          PodDisruptionBudget: maxUnavailable 1
 ```
 
 - **ClusterIP `kubepulse`:** stable virtual IP and DNS name for in-cluster clients; Pods are selected by label `app=kubepulse`.
