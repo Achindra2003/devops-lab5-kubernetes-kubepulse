@@ -3,6 +3,7 @@
 > **DevOps Lab 5:** Deploy containerized applications on a Kubernetes cluster, configure Deployments, Services, scaling and rolling updates.  
 > **Course:** MCA Trimester 5 — DevOps Lab  
 > **Student:** Achindra Sharma (2547105) — 4MCA A  
+> **Repository:** [https://github.com/Achindra2003/devops-lab5-kubernetes-kubepulse](https://github.com/Achindra2003/devops-lab5-kubernetes-kubepulse)  
 > **Live dashboard:** [http://localhost:8088](http://localhost:8088) (after deployment)
 
 ---

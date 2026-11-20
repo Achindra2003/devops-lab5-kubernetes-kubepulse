@@ -8,7 +8,7 @@
 **Application:** KubePulse — Kubernetes-aware microservice with a live dashboard  
 **Cluster:** kind v0.27.0, Kubernetes v1.32.2, 3 nodes (1 control-plane, 2 workers)  
 **Dashboard URL:** `http://localhost:8088`  
-**GitHub Repository:** _add link after pushing_
+**GitHub Repository:** [https://github.com/Achindra2003/devops-lab5-kubernetes-kubepulse](https://github.com/Achindra2003/devops-lab5-kubernetes-kubepulse)
 
 All figures below are real command output captured by `scripts/capture-evidence.py`; the raw text for each is in `docs/evidence/`.
 
